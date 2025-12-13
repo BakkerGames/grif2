@@ -140,7 +140,7 @@ internal class Program
             return;
         }
         // load data
-        var game = new Game();
+        var game = new IFGame();
         Grod baseGrod = new(fileList[0]);
         baseGrod.AddItems(IO.ReadGrif(fileList[0]));
         for (int i = 1; i < fileList.Count; i++)
@@ -204,7 +204,7 @@ internal class Program
         StringBuilder result = new();
         result.AppendLine("GRIF - Game Runner for Interactive Fiction");
         result.AppendLine();
-        result.AppendLine($"Version {Game.Version}");
+        result.AppendLine($"Version {IFGame.Version}");
         result.AppendLine();
         result.AppendLine("grif <filename.grif | directory>");
         result.AppendLine("     [-h  | --help | -?]");
@@ -219,7 +219,7 @@ internal class Program
 
     private static void Input(object sender)
     {
-        OutputText(((Game)sender).Prompt() ?? "");
+        OutputText(((IFGame)sender).Prompt() ?? "");
         string? input;
         if (_inputQueue.Count > 0)
         {
@@ -234,8 +234,8 @@ internal class Program
         {
             OutputTextLog(input + Environment.NewLine);
             var message = new GrifMessage(MessageType.Text, input);
-            ((Game)sender).InputMessages.Enqueue(message);
-            OutputText(((Game)sender).AfterPrompt() ?? "");
+            ((IFGame)sender).InputMessages.Enqueue(message);
+            OutputText(((IFGame)sender).AfterPrompt() ?? "");
         }
     }
 

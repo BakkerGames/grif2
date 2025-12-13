@@ -1,22 +1,21 @@
 ﻿using static Grif.Common;
 using static Grif.Dags;
 using static Grif.IO;
-using static Grif.Parser;
+using static Grif.IFParser;
 
 namespace Grif;
 
 public delegate void InputEventHandler(object sender);
 public delegate void OutputEventHandler(object sender, GrifMessage e);
 
-public class Game
+public class IFGame
 {
-    public static string Version { get { return "2.2025.1206"; } }
+    public static string Version { get { return "2.2025.1209"; } }
 
     private Grod _baseGrod = new("");
     private Grod _overlayGrod = new("");
     private string _saveBasePath = "";
     private string? _referenceBasePath;
-
 
     public event InputEventHandler? InputEvent;
     public event OutputEventHandler? OutputEvent;

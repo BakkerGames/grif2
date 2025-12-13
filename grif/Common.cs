@@ -54,6 +54,7 @@ public static partial class Common
     public const string COMMAND_PREFIX = "command.";
     public const string DIRECTION_PREFIX = "direction.";
     public const string NOUN_PREFIX = "noun.";
+    public const string NOUNITEM_PREFIX = "nounitem.";
     public const string PREPOSITION_PREFIX = "preposition.";
     public const string VERB_PREFIX = "verb.";
 }

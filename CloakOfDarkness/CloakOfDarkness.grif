@@ -196,11 +196,11 @@ command.read.message
 			@if @lt(@get(value.scuffed),2) @then
 				@write(@get(message.readable))
 				@write(".")
-				@sleep(1000)
+				@sleep(750)
 				@write(".")
-				@sleep(1000)
+				@sleep(750)
 				@write(".")
-				@sleep(1000)
+				@sleep(750)
 				@nl
 				@nl
 				@msg(message.you_won)
@@ -210,11 +210,11 @@ command.read.message
 			@else
 				@write(@get(message.unreadable))
 				@write(".")
-				@sleep(1000)
+				@sleep(750)
 				@write(".")
-				@sleep(1000)
+				@sleep(750)
 				@write(".")
-				@sleep(1000)
+				@sleep(750)
 				@nl
 				@nl
 				@msg(message.you_lost)
@@ -582,7 +582,7 @@ system.output_width
 system.prompt
 	\n>
 system.version
-	2025.11.23
+	2025.12.09
 value.cloakscore
 	1
 value.maxscore

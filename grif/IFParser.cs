@@ -15,12 +15,13 @@ The order of the words does not matter, so "go west" and "west go" are equivalen
 Noun must come before indirect noun if both are present.
 */
 
-public static class Parser
+public static class IFParser
 {
     private static long _maxWordLen = 0;
     private static string DONT_UNDERSTAND_TEXT = "";
     private static List<GrodItem> _verbs = [];
     private static List<GrodItem> _nouns = [];
+    private static List<GrodItem> _nounitems = [];
     private static List<GrodItem> _directions = [];
     private static List<GrodItem> _prepositions = [];
     private static List<GrodItem> _adjectives = [];
@@ -34,6 +35,9 @@ public static class Parser
         _nouns = [.. grod.Items(NOUN_PREFIX, true, true)
             .Where(x => !string.IsNullOrWhiteSpace(x.Value) && x.Value != NULL)
             .Select(x => new GrodItem(x.Key[NOUN_PREFIX.Length..], x.Value))];
+        _nounitems = [.. grod.Items(NOUNITEM_PREFIX, true, true)
+            .Where(x => !string.IsNullOrWhiteSpace(x.Value) && x.Value != NULL)
+            .Select(x => new GrodItem(x.Key[NOUNITEM_PREFIX.Length..], x.Value))];
         _directions = [.. grod.Items(DIRECTION_PREFIX, true, true)
             .Where(x => !string.IsNullOrWhiteSpace(x.Value) && x.Value != NULL)
             .Select(x => new GrodItem(x.Key[DIRECTION_PREFIX.Length..], x.Value))];
@@ -49,6 +53,7 @@ public static class Parser
         {
             TrimSynonyms(ref _verbs);
             TrimSynonyms(ref _nouns);
+            TrimSynonyms(ref _nounitems);
             TrimSynonyms(ref _directions);
             TrimSynonyms(ref _prepositions);
             TrimSynonyms(ref _adjectives);

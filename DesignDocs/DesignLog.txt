@@ -263,3 +263,9 @@
 2025-12-06
 - Switching to long values for all math operations.
 - Added --split-input command line option, for comma-separated input values.
+
+2025-12-10
+- Renamed Game to IFGame.
+- Renamed Parser to IFParser, for clarity.
+- Started nounitem xref in parser.
+
