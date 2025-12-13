@@ -19,6 +19,7 @@ public static partial class Common
     public const string DATA_EXTENSION = ".grif";
     public const string SAVE_FILENAME = "save";
     public const string SAVE_EXTENSION = ".grifsave";
+    public const string STACK_EXTENSION = ".grifstack";
 
     public const string AFTER_PROMPT = "system.after_prompt";
     public const string ARTICLE_KEY = "system.articles";

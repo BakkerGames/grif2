@@ -13,6 +13,7 @@ Can handle the following input patterns:
     verb preposition noun
 The order of the words does not matter, so "go west" and "west go" are equivalent.
 Noun must come before indirect noun if both are present.
+Nouns may be preceeded by adjectives, which are used to identify the item from the noun.
 */
 
 public static class IFParser
