@@ -5,138 +5,22 @@ namespace Grif;
 
 internal class Program
 {
-    private static string? outputFilename = null;
-
-    private static readonly Queue<string> _inputQueue = new();
+    private static readonly Queue<string> inputQueue = new();
 
     private static int outputCount = 0;
     private static int maxOutputWidth = 0;
 
-    static async Task Main(string[] args)
+    private static readonly List<string> fileList = [];
+    private static string? inputFilename;
+    private static string? splitInput;
+    private static string? outputFilename;
+
+    internal static async Task Main(string[] args)
     {
-        List<string> fileList = [];
-        string filename;
-        string? inputFilename = null;
-        string? splitInput = null;
-        if (args.Length == 0)
+        var parseResult = ParseParameters(args);
+        if (parseResult != 0)
         {
-            OutputText(Syntax());
-            return;
-        }
-        int index = 0;
-        while (index < args.Length)
-        {
-            if (args[index].StartsWith('-'))
-            {
-                if (index + 1 >= args.Length)
-                {
-                    OutputText($"Argument must have a value: {args[index]}");
-                    OutputText(Syntax());
-                    return;
-                }
-                if (args[index].Equals("-h", OIC) ||
-                    args[index].Equals("--help", OIC) ||
-                    args[index].Equals("-?"))
-                {
-                    OutputText(Syntax());
-                    return;
-                }
-                else if (args[index].Equals("-i", OIC) ||
-                    args[index].Equals("--input", OIC))
-                {
-                    index++;
-                    inputFilename = args[index++];
-                    if (!File.Exists(inputFilename))
-                    {
-                        OutputText($"Input file not found: {inputFilename}");
-                        OutputText(Syntax());
-                        return;
-                    }
-                }
-                else if (args[index].Equals("-si", OIC) ||
-                    args[index].Equals("--split-input", OIC))
-                {
-                    index++;
-                    splitInput = args[index++];
-                }
-                else if (args[index].Equals("-o", OIC) ||
-                    args[index].Equals("--output", OIC))
-                {
-                    index++;
-                    var tempFilename = args[index++];
-                    try
-                    {
-                        // check if file can be created
-                        var outStream = File.CreateText(tempFilename);
-                        outStream.Close();
-                        outputFilename = tempFilename;
-                    }
-                    catch (Exception)
-                    {
-                        OutputText($"Error creating output file: {tempFilename}");
-                        OutputText(Syntax());
-                        return;
-                    }
-                }
-                else if (args[index].Equals("-m", OIC) ||
-                    args[index].Equals("--mod", OIC))
-                {
-                    index++;
-                    var modFilename = args[index++];
-                    if (File.Exists(modFilename))
-                    {
-                        fileList.Add(modFilename);
-                    }
-                    else if (File.Exists(modFilename + DATA_EXTENSION))
-                    {
-                        fileList.Add(modFilename + DATA_EXTENSION);
-                    }
-                    else if (Directory.Exists(modFilename))
-                    {
-                        foreach (string file in Directory.GetFiles(modFilename, "*" + DATA_EXTENSION))
-                        {
-                            fileList.Add(file);
-                        }
-                    }
-                    else
-                    {
-                        OutputText($"File/directory not found: {modFilename}");
-                    }
-                }
-                else
-                {
-                    OutputText($"Unknown argument: {args[index++]}");
-                    OutputText(Syntax());
-                    return;
-                }
-            }
-            else
-            {
-                filename = args[index++];
-                if (File.Exists(filename))
-                {
-                    fileList.Add(filename);
-                }
-                else if (File.Exists(filename + DATA_EXTENSION))
-                {
-                    fileList.Add(filename + DATA_EXTENSION);
-                }
-                else if (Directory.Exists(filename))
-                {
-                    foreach (string file in Directory.GetFiles(filename, "*" + DATA_EXTENSION))
-                    {
-                        fileList.Add(file);
-                    }
-                }
-                else
-                {
-                    OutputText($"File/directory not found: {filename}");
-                }
-            }
-        }
-        if (fileList.Count == 0)
-        {
-            OutputText(Syntax());
+            Environment.Exit(parseResult);
             return;
         }
         // load data
@@ -145,7 +29,10 @@ internal class Program
         baseGrod.AddItems(IO.ReadGrif(fileList[0]));
         for (int i = 1; i < fileList.Count; i++)
         {
-            baseGrod.AddItems(IO.ReadGrif(fileList[i]));
+            var newgrod = new Grod(fileList[i]);
+            newgrod.AddItems(IO.ReadGrif(fileList[i]));
+            newgrod.Parent = baseGrod;
+            baseGrod = newgrod;
         }
         var gameName = baseGrod.Get(GAMENAME, true);
         if (string.IsNullOrWhiteSpace(gameName))
@@ -172,12 +59,12 @@ internal class Program
                             var splitLines = tempLine.Split(splitInput);
                             foreach (var splitLine in splitLines)
                             {
-                                _inputQueue.Enqueue(splitLine.Trim());
+                                inputQueue.Enqueue(splitLine.Trim());
                             }
                         }
                         else
                         {
-                            _inputQueue.Enqueue(tempLine);
+                            inputQueue.Enqueue(tempLine);
                         }
                     }
                 }
@@ -217,13 +104,222 @@ internal class Program
         return result.ToString();
     }
 
+    private static int ParseParameters(string[] args)
+    {
+        if (args.Length == 0)
+        {
+            OutputText(Syntax());
+            return 1;
+        }
+        int index = 0;
+        while (index < args.Length)
+        {
+            if (args[index].StartsWith('-'))
+            {
+                if (index + 1 >= args.Length)
+                {
+                    OutputText($"Argument must have a value: {args[index]}");
+                    OutputText(Syntax());
+                    return 2;
+                }
+                if (args[index].Equals("-h", OIC) ||
+                    args[index].Equals("--help", OIC) ||
+                    args[index].Equals("-?"))
+                {
+                    OutputText(Syntax());
+                    return 2;
+                }
+                else if (args[index].Equals("-i", OIC) ||
+                    args[index].Equals("--input", OIC))
+                {
+                    index++;
+                    inputFilename = args[index++];
+                    if (!File.Exists(inputFilename))
+                    {
+                        OutputText($"Input file not found: {inputFilename}");
+                        OutputText(Syntax());
+                        return 2;
+                    }
+                }
+                else if (args[index].Equals("-si", OIC) ||
+                    args[index].Equals("--split-input", OIC))
+                {
+                    index++;
+                    splitInput = args[index++];
+                }
+                else if (args[index].Equals("-o", OIC) ||
+                    args[index].Equals("--output", OIC))
+                {
+                    index++;
+                    var tempFilename = args[index++];
+                    try
+                    {
+                        // check if file can be created
+                        var outStream = File.CreateText(tempFilename);
+                        outStream.Close();
+                        outputFilename = tempFilename;
+                    }
+                    catch (Exception)
+                    {
+                        OutputText($"Error creating output file: {tempFilename}");
+                        OutputText(Syntax());
+                        return 2;
+                    }
+                }
+                else if (args[index].Equals("-m", OIC) ||
+                    args[index].Equals("--mod", OIC))
+                {
+                    index++;
+                    var modFilename = args[index++];
+                    if (File.Exists(modFilename))
+                    {
+                        fileList.Add(modFilename);
+                    }
+                    else if (File.Exists(modFilename + DATA_EXTENSION))
+                    {
+                        fileList.Add(modFilename + DATA_EXTENSION);
+                    }
+                    else if (Directory.Exists(modFilename))
+                    {
+                        foreach (string file in Directory.GetFiles(modFilename, "*" + DATA_EXTENSION))
+                        {
+                            fileList.Add(file);
+                        }
+                    }
+                    else
+                    {
+                        OutputText($"File/directory not found: {modFilename}");
+                    }
+                }
+                else
+                {
+                    OutputText($"Unknown argument: {args[index++]}");
+                    OutputText(Syntax());
+                    return 2;
+                }
+            }
+            else
+            {
+                var filename = args[index++];
+                if (!CheckFilename(filename))
+                {
+                    return 2;
+                }
+            }
+        }
+        if (fileList.Count == 0)
+        {
+            OutputText(Syntax());
+            return 1;
+        }
+        return 0;
+    }
+
+    private static bool CheckFilename(string filename)
+    {
+        var extension = Path.GetExtension(filename);
+        if (extension.Equals(STACK_EXTENSION, OIC))
+        {
+            return CheckStackFile(filename);
+        }
+        else if (extension.Equals(DATA_EXTENSION, OIC))
+        {
+            return CheckDataFile(filename);
+        }
+        else if (File.Exists(filename + STACK_EXTENSION))
+        {
+            return CheckStackFile(filename);
+        }
+        else if (File.Exists(filename + DATA_EXTENSION))
+        {
+            return CheckDataFile(filename);
+        }
+        else if (Directory.Exists(filename))
+        {
+            return CheckDirectoryFiles(filename);
+        }
+        else
+        {
+            OutputText($"File/directory not found: {filename}");
+            return false;
+        }
+    }
+
+    private static bool CheckStackFile(string filename)
+    {
+        var path = Path.GetDirectoryName(filename) ?? ".";
+        var found = false;
+        foreach (var line in File.ReadLines(filename))
+        {
+            var tempLine = line.Trim();
+            if (tempLine.Length == 0 || tempLine.StartsWith("//"))
+            {
+                continue;
+            }
+            if (string.IsNullOrEmpty(Path.GetDirectoryName(tempLine))) {
+                tempLine = Path.Combine(path, tempLine);
+            }
+            if (!CheckFilename(tempLine))
+            {
+                return false;
+            }
+            found = true;
+        }
+        return found;
+    }
+
+    private static bool CheckDataFile(string filename)
+    {
+        if (string.IsNullOrEmpty(Path.GetExtension(filename)))
+        {
+            filename += DATA_EXTENSION;
+        }
+        if (!File.Exists(filename))
+        {
+            return false;
+        }
+        if (!Path.GetExtension(filename).Equals(DATA_EXTENSION, OIC))
+        {
+            OutputText($"Data file must have {DATA_EXTENSION} extension: {filename}");
+            return false;
+        }
+        fileList.Add(filename);
+        return true;
+    }
+
+    private static bool CheckDirectoryFiles(string directory)
+    {
+        var stacks = Directory.GetFiles(directory, "*" + STACK_EXTENSION);
+        var files = Directory.GetFiles(directory, "*" + DATA_EXTENSION);
+        if (stacks.Length == 0 && files.Length == 0)
+        {
+            OutputText($"No stack or data files found in directory: {directory}");
+            return false;
+        }
+        foreach (var stack in stacks)
+        {
+            if (!CheckStackFile(stack))
+            {
+                return false;
+            }
+        }
+        foreach (var file in files)
+        {
+            if (!CheckDataFile(file))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static void Input(object sender)
     {
         OutputText(((IFGame)sender).Prompt() ?? "");
         string? input;
-        if (_inputQueue.Count > 0)
+        if (inputQueue.Count > 0)
         {
-            input = _inputQueue.Dequeue();
+            input = inputQueue.Dequeue();
             Console.WriteLine(input);
         }
         else
