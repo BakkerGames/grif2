@@ -2,6 +2,6 @@ adjectives
 script object with internal index
 script object return
 __config values
-system.uppercase
+* system.uppercase
 example game with adjectives, red ball/blue ball/small box/large box
 DAGS example scripts for various useful concepts

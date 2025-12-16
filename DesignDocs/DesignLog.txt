@@ -269,3 +269,8 @@
 - Renamed Parser to IFParser, for clarity.
 - Started nounitem xref in parser.
 
+2025-12-14
+- Properly handle grifstack and files in command parameters.
+
+2025-12-15
+- system.uppercase for input

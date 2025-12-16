@@ -9,6 +9,7 @@ internal class Program
 
     private static int outputCount = 0;
     private static int maxOutputWidth = 0;
+    private static bool uppercaseInput = false;
 
     private static readonly List<string> fileList = [];
     private static string? inputFilename;
@@ -75,8 +76,9 @@ internal class Program
                 return;
             }
         }
-        // check for max width setting
-        maxOutputWidth = (int)(baseGrod.GetNumber("system.output_width", true) ?? 0);
+        // get settings
+        maxOutputWidth = (int)(baseGrod.GetNumber(OUTPUT_WIDTH, true) ?? 0);
+        uppercaseInput = baseGrod.GetBool(UPPERCASE, true) ?? false;
         // start game loop
         game.InputEvent += Input;
         game.OutputEvent += Output;
@@ -328,6 +330,10 @@ internal class Program
         }
         if (input != null)
         {
+            if (uppercaseInput)
+            {
+                input = input.ToUpper();
+            }
             OutputTextLog(input + Environment.NewLine);
             var message = new GrifMessage(MessageType.Text, input);
             ((IFGame)sender).InputMessages.Enqueue(message);
