@@ -6,6 +6,7 @@
     <File Path="CloakOfDarkness/Specification.txt" />
   </Folder>
   <Folder Name="/DesignDocs/">
+    <File Path="DesignDocs/Dags.md" />
     <File Path="DesignDocs/DesignLog.txt" />
     <File Path="DesignDocs/GameFlow.txt" />
     <File Path="DesignDocs/Grod.md" />
