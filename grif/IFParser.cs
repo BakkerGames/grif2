@@ -16,39 +16,51 @@ Noun must come before indirect noun if both are present.
 Nouns may be preceeded by adjectives, which are used to identify the item from the noun.
 */
 
+/// <summary>
+/// Represents a parsed input pattern consisting of a key and its associated values.
+/// The values are "fixed" strings and resized as needed.
+/// </summary>
+internal class ParserItem(string key, string[] values)
+{
+    public string Key { get; } = key;
+    public string[] Values { get; } = values;
+}
+
 public static class IFParser
 {
     private static long _maxWordLen = 0;
     private static string DONT_UNDERSTAND_TEXT = "";
-    private static List<GrodItem> _verbs = [];
-    private static List<GrodItem> _nouns = [];
-    private static List<GrodItem> _nounitems = [];
-    private static List<GrodItem> _directions = [];
-    private static List<GrodItem> _prepositions = [];
-    private static List<GrodItem> _adjectives = [];
-    private static List<GrodItem> _articles = []; // "the,a,an,some,any,my,his,her,its,our,their"
+    private static List<ParserItem> _verbs = [];
+    private static List<ParserItem> _nouns = [];
+    private static List<ParserItem> _nounitems = [];
+    private static List<ParserItem> _directions = [];
+    private static List<ParserItem> _prepositions = [];
+    private static List<ParserItem> _adjectives = [];
+    // "the,a,an,some,any,my,his,her,its,our,their"
+    private static List<ParserItem> _articles = [];
 
     public static void ParseInit(Grod grod)
     {
         _verbs = [.. grod.Items(VERB_PREFIX, true, true)
             .Where(x => !string.IsNullOrWhiteSpace(x.Value) && x.Value != NULL)
-            .Select(x => new GrodItem(x.Key[VERB_PREFIX.Length..], x.Value))];
+            .Select(x => new ParserItem(x.Key[VERB_PREFIX.Length..], SplitList(x.Value)))];
         _nouns = [.. grod.Items(NOUN_PREFIX, true, true)
             .Where(x => !string.IsNullOrWhiteSpace(x.Value) && x.Value != NULL)
-            .Select(x => new GrodItem(x.Key[NOUN_PREFIX.Length..], x.Value))];
+            .Select(x => new ParserItem(x.Key[NOUN_PREFIX.Length..], SplitList(x.Value)))];
         _nounitems = [.. grod.Items(NOUNITEM_PREFIX, true, true)
             .Where(x => !string.IsNullOrWhiteSpace(x.Value) && x.Value != NULL)
-            .Select(x => new GrodItem(x.Key[NOUNITEM_PREFIX.Length..], x.Value))];
+            .Select(x => new ParserItem(x.Key[NOUNITEM_PREFIX.Length..], SplitList(x.Value)))];
         _directions = [.. grod.Items(DIRECTION_PREFIX, true, true)
             .Where(x => !string.IsNullOrWhiteSpace(x.Value) && x.Value != NULL)
-            .Select(x => new GrodItem(x.Key[DIRECTION_PREFIX.Length..], x.Value))];
+            .Select(x => new ParserItem(x.Key[DIRECTION_PREFIX.Length..], SplitList(x.Value)))];
         _prepositions = [.. grod.Items(PREPOSITION_PREFIX, true, true)
             .Where(x => !string.IsNullOrWhiteSpace(x.Value) && x.Value != NULL)
-            .Select(x => new GrodItem(x.Key[PREPOSITION_PREFIX.Length..], x.Value))];
+            .Select(x => new ParserItem(x.Key[PREPOSITION_PREFIX.Length..], SplitList(x.Value)))];
         _adjectives = [.. grod.Items(ADJECTIVE_PREFIX, true, true)
             .Where(x => !string.IsNullOrWhiteSpace(x.Value) && x.Value != NULL)
-            .Select(x => new GrodItem(x.Key[ADJECTIVE_PREFIX.Length..], x.Value))];
-        _articles = grod.Items(ARTICLE_KEY, true, true);
+            .Select(x => new ParserItem(x.Key[ADJECTIVE_PREFIX.Length..], SplitList(x.Value)))];
+        _articles = [.. SplitList(grod.Get(ARTICLE_KEY, true))
+            .Select(x => new ParserItem(ARTICLE_KEY, SplitList(x)))];
         _maxWordLen = GetNumberValue(grod.Get(WORDSIZE, true));
         if (_maxWordLen > 0)
         {
@@ -223,11 +235,11 @@ public static class IFParser
 
     #region Private methods
 
-    private static void TrimSynonyms(ref List<GrodItem> items)
+    private static void TrimSynonyms(ref List<ParserItem> items)
     {
         for (int i = 0; i < items.Count; i++)
         {
-            var words = items[i].Value!.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var words = items[i].Values;
             for (int j = 0; j < words.Length; j++)
             {
                 if (_maxWordLen > 0 && words[j].Length > _maxWordLen)
@@ -235,11 +247,11 @@ public static class IFParser
                     words[j] = words[j][..(int)_maxWordLen];
                 }
             }
-            items[i] = new GrodItem(items[i].Key, string.Join(',', words));
+            items[i] = new ParserItem(items[i].Key, words);
         }
     }
 
-    private static (string?, string?) GetMatchingWord(List<GrodItem> vocabList, ref List<string> words)
+    private static (string?, string?) GetMatchingWord(List<ParserItem> vocabList, ref List<string> words)
     {
         for (int i = 0; i < words.Count; i++)
         {
@@ -250,7 +262,7 @@ public static class IFParser
             }
             foreach (var item in vocabList)
             {
-                var verbWords = item.Value!.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var verbWords = item.Values;
                 foreach (var syn in verbWords)
                 {
                     if (word.Equals(syn, OIC))
@@ -265,7 +277,7 @@ public static class IFParser
         return (null, null);
     }
 
-    private static (string?, string?) GetNoun(List<GrodItem> nounList, ref List<string> words)
+    private static (string?, string?) GetNoun(List<ParserItem> nounList, ref List<string> words)
     {
         (var noun, var nounWord) = GetMatchingWord(nounList, ref words);
         if (noun != null)
@@ -283,13 +295,13 @@ public static class IFParser
         return (null, null);
     }
 
-    private static void RemoveArticles(List<GrodItem> articles, ref List<string> words)
+    private static void RemoveArticles(List<ParserItem> articles, ref List<string> words)
     {
         for (int i = words.Count - 1; i >= 0; i--)
         {
             foreach (var item in articles)
             {
-                var articleWords = item.Value!.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var articleWords = item.Values;
                 foreach (var syn in articleWords)
                 {
                     if (words[i].Equals(syn, OIC))

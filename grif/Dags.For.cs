@@ -126,7 +126,7 @@ public partial class Dags
         string? list = grod.Get(p[1].Value, true);
         if (!string.IsNullOrWhiteSpace(list))
         {
-            var items = list.Split(',');
+            var items = SplitList(list);
             foreach (string value in items)
             {
                 var value2 = FixListItemOut(value);

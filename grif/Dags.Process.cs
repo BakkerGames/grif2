@@ -14,6 +14,8 @@ public partial class Dags
         bool boolAnswer;
         bool isNull0;
         bool isNull1;
+        string[] list1 = [];
+        string[] list2 = [];
         try
         {
             if (index >= tokens.Length)
@@ -165,6 +167,35 @@ public partial class Dags
                         sb.Append(item.Value);
                     }
                     result.Add(new GrifMessage(MessageType.Internal, sb.ToString()));
+                    break;
+                case CONTAINS_TOKEN:
+                    CheckParameterCount(p, 2);
+                    list1 = SplitList(p[0].Value);
+                    if (list1.Contains(p[1].Value))
+                    {
+                        result.Add(new GrifMessage(MessageType.Internal, TRUE));
+                        break;
+                    }
+                    result.Add(new GrifMessage(MessageType.Internal, FALSE));
+                    break;
+                case CONTAINSLIST_TOKEN:
+                    CheckParameterCount(p, 2);
+                    list1 = SplitList(p[0].Value);
+                    list2 = SplitList(p[1].Value);
+                    if (list1.Length == 0 || list2.Length == 0)
+                    {
+                        result.Add(new GrifMessage(MessageType.Internal, FALSE));
+                        break;
+                    }
+                    foreach (var listItem in list2)
+                    {
+                        if (!list1.Contains(listItem))
+                        {
+                            result.Add(new GrifMessage(MessageType.Internal, FALSE));
+                            break;
+                        }
+                    }
+                    result.Add(new GrifMessage(MessageType.Internal, TRUE));
                     break;
                 case DEBUG_TOKEN:
                     CheckParameterCount(p, 1);
@@ -475,8 +506,8 @@ public partial class Dags
                     }
                     else
                     {
-                        var listItems = value!.Split(',');
-                        result.Add(new GrifMessage(MessageType.Internal, listItems.Length.ToString()));
+                        list1 = SplitList(value);
+                        result.Add(new GrifMessage(MessageType.Internal, list1.Length.ToString()));
                     }
                     break;
                 case LOWER_TOKEN:

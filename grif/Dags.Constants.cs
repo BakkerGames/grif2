@@ -15,6 +15,8 @@ public partial class Dags
     public const string CLEARLIST_TOKEN = "@clearlist(";
     public const string COMMENT_TOKEN = "@comment(";
     public const string CONCAT_TOKEN = "@concat(";
+    public const string CONTAINS_TOKEN = "@contains(";
+    public const string CONTAINSLIST_TOKEN = "@containslist(";
     public const string DEBUG_TOKEN = "@debug(";
     public const string DIVTO_TOKEN = "@divto(";
     public const string DIV_TOKEN = "@div(";

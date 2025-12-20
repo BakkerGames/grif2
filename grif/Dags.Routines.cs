@@ -469,6 +469,39 @@ public partial class Dags
         return pos < value.Length && value[pos] == SCRIPT_CHAR;
     }
 
+    /// <summary>
+    /// Determines if the value is null or the special NULL string.
+    /// </summary>
+    public static bool IsNull(string? value)
+    {
+        return value == null || value.Equals(NULL, OIC);
+    }
+
+    /// <summary>
+    /// Determines whether the specified string is null, empty, or the special NULL string.
+    /// </summary>
+    public static bool IsNullOrEmpty(string? value)
+    {
+        return value == null || value.Equals(NULL, OIC) || value == "";
+    }
+
+    /// <summary>
+    /// Splits a comma-delimited string into an array of items, normalizing each element.
+    /// </summary>
+    public static string[] SplitList(string? list)
+    {
+        if (string.IsNullOrWhiteSpace(list) || IsNull(list))
+        {
+            return [];
+        }
+        var items = list.Split(',');
+        for (int i = 0; i < items.Length; i++)
+        {
+            items[i] = FixListItemOut(items[i]) ?? "";
+        }
+        return items;
+    }
+
     #region Private routines
 
     private static List<GrifMessage> GetParameters(string[] tokens, ref int index, Grod grod)
@@ -593,16 +626,6 @@ public partial class Dags
         return userResult;
     }
 
-    public static bool IsNull(string? value)
-    {
-        return value == null || value.Equals(NULL, OIC);
-    }
-
-    public static bool IsNullOrEmpty(string? value)
-    {
-        return value == null || value.Equals(NULL, OIC) || value == "";
-    }
-
     private static string TrueFalse(bool value)
     {
         return value ? TRUE : FALSE;
@@ -714,12 +737,12 @@ public partial class Dags
         {
             return null;
         }
-        var items = list.Split(',');
+        var items = SplitList(list);
         if (x >= items.Length)
         {
             return null;
         }
-        return FixListItemOut(items[x]);
+        return items[x];
     }
 
     private static void SetListItem(Grod grod, string key, long x, string? value)
@@ -737,7 +760,7 @@ public partial class Dags
         {
             list = NULL;
         }
-        var items = list.Split(',').ToList();
+        var items = SplitList(list).ToList();
         while (x >= items.Count)
         {
             items.Add(NULL);
@@ -761,7 +784,7 @@ public partial class Dags
         {
             list = NULL;
         }
-        var items = list.Split(',').ToList();
+        var items = SplitList(list).ToList();
         while (x >= items.Count)
         {
             items.Add(NULL);
@@ -785,7 +808,7 @@ public partial class Dags
         {
             list = NULL;
         }
-        var items = list.Split(',').ToList();
+        var items = SplitList(list).ToList();
         while (x >= items.Count)
         {
             return; // Nothing to remove
