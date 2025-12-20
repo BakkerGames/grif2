@@ -279,3 +279,6 @@
 - @contains() and @containslist()
 - Added Dags.SplitItems for splitting strings by commas or spaces and fixing values.
 - New ParserItem type for holding key and a list of synonyms.
+- BREAKING CHANGE: adjectives are defined in reverse from GRIF 1.0.
+- Changed adjectives to "adjective.black=cloak" instead of "adjective.cloak=black".
+- Include adjectives in the input sent to the game for further processing. (Which ball?)

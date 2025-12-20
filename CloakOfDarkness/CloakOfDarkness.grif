@@ -93,10 +93,20 @@
 	@setoutchannel("#GAMEOVER;")
 @room
 	@get(value.room)
-adjective.cloak
-	velvet,handsome,black,dark,satin
-adjective.hook
-	brass,small
+adjective.black
+	cloak
+adjective.brass
+	hook
+adjective.dark
+	cloak
+adjective.handsome
+	cloak
+adjective.satin
+	cloak
+adjective.small
+	hook
+adjective.velvet
+	cloak
 command.down
 	@godir(down)
 command.drop
@@ -582,7 +592,7 @@ system.output_width
 system.prompt
 	\n>
 system.version
-	2025.12.09
+	2025.12.20
 value.cloakscore
 	1
 value.maxscore

@@ -8,17 +8,24 @@ Can handle the following input patterns:
     verb
     direction
     verb direction
-    verb noun
-    verb noun preposition indirectnoun
-    verb preposition noun
-The order of the words does not matter, so "go west" and "west go" are equivalent.
-Noun must come before indirect noun if both are present.
-Nouns may be preceeded by adjectives, which are used to identify the item from the noun.
+    verb [article] [adjective...] noun
+    verb [article] [adjective...] noun preposition [article] [adjective...] indirectnoun
+    verb preposition [article] [adjective...] noun
+Verbs may be in any position, e.g. "go north" or "north go".
+Examples:
+    "take lamp"
+    "go north"
+    "put lamp on table"
+    "look at painting"
+    "examine the small red box"
+    "open door with key"
+    "1234"
+The constructed command is looked up in the Grod data to see if it exists.
 */
 
 /// <summary>
 /// Represents a parsed input pattern consisting of a key and its associated values.
-/// The values are "fixed" strings and resized as needed.
+/// The values are normalized strings and resized to _maxWordLen as needed.
 /// </summary>
 internal class ParserItem(string key, string[] values)
 {
@@ -36,8 +43,7 @@ public static class IFParser
     private static List<ParserItem> _directions = [];
     private static List<ParserItem> _prepositions = [];
     private static List<ParserItem> _adjectives = [];
-    // "the,a,an,some,any,my,his,her,its,our,their"
-    private static List<ParserItem> _articles = [];
+    private static List<ParserItem> _articles = []; // "the,a,an,some,any,my,his,her,its,our,their"
 
     public static void ParseInit(Grod grod)
     {
@@ -85,22 +91,23 @@ public static class IFParser
         string? directionWord = null;
         string? noun = null;
         string? nounWord = null;
+        string? adjectiveList = null;
         string? preposition = null;
         string? prepositionWord = null;
         string? indirectNoun = null;
         string? indirectNounWord = null;
+        string? indirectAdjectiveList = null;
         string? extraText = null;
         if (string.IsNullOrWhiteSpace(input))
         {
             return null;
         }
-        var words = input.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        var words = input.Replace(","," ").Split(' ', StringSplitOptions.RemoveEmptyEntries)
             .ToList();
         if (words.Count == 0)
         {
             return null;
         }
-        RemoveArticles(_articles, ref words);
         // handle "west", "go west", "west go"
         (verb, verbWord) = GetMatchingWord(_verbs, ref words);
         if (words.Count > 0)
@@ -109,14 +116,14 @@ public static class IFParser
         }
         if (words.Count > 0)
         {
-            (noun, nounWord) = GetNoun(_nouns, ref words);
+            (noun, nounWord, adjectiveList) = GetNoun(_nouns, ref words);
         }
         if (words.Count > 0)
         {
-            (preposition, prepositionWord) = GetMatchingWord(_prepositions, ref words);
+            (preposition, prepositionWord) = GetMatchingFirstWord(_prepositions, ref words);
             if (words.Count > 0)
             {
-                (indirectNoun, indirectNounWord) = GetNoun(_nouns, ref words);
+                (indirectNoun, indirectNounWord, indirectAdjectiveList) = GetNoun(_nouns, ref words);
             }
             else
             {
@@ -224,10 +231,12 @@ public static class IFParser
         result.Add(new GrifMessage(MessageType.Script, $"{SET_TOKEN}input.directionword,{directionWord ?? NULL})"));
         result.Add(new GrifMessage(MessageType.Script, $"{SET_TOKEN}input.noun,{noun ?? NULL})"));
         result.Add(new GrifMessage(MessageType.Script, $"{SET_TOKEN}input.nounword,{nounWord ?? NULL})"));
+        result.Add(new GrifMessage(MessageType.Script, $"{SET_TOKEN}input.nounadjectives,\"{adjectiveList ?? NULL}\")"));
         result.Add(new GrifMessage(MessageType.Script, $"{SET_TOKEN}input.preposition,{preposition ?? NULL})"));
         result.Add(new GrifMessage(MessageType.Script, $"{SET_TOKEN}input.prepositionword,{prepositionWord ?? NULL})"));
         result.Add(new GrifMessage(MessageType.Script, $"{SET_TOKEN}input.indirectnoun,{indirectNoun ?? NULL})"));
         result.Add(new GrifMessage(MessageType.Script, $"{SET_TOKEN}input.indirectnounword,{indirectNounWord ?? NULL})"));
+        result.Add(new GrifMessage(MessageType.Script, $"{SET_TOKEN}input.indirectadjectives,\"{indirectAdjectiveList ?? NULL}\")"));
         result.Add(new GrifMessage(MessageType.Script, $"{SET_TOKEN}input.extratext,{extraText ?? NULL})"));
         result.Add(new GrifMessage(MessageType.Script, $"{SCRIPT_TOKEN}{command})"));
         return result;
@@ -277,38 +286,121 @@ public static class IFParser
         return (null, null);
     }
 
-    private static (string?, string?) GetNoun(List<ParserItem> nounList, ref List<string> words)
+    private static (string?, string?) GetMatchingFirstWord(List<ParserItem> vocabList, ref List<string> words)
     {
-        (var noun, var nounWord) = GetMatchingWord(nounList, ref words);
-        if (noun != null)
+        if (words.Count == 0)
         {
-            return (noun, nounWord);
+            return (null, null);
         }
-        for (int i = 0; i < words.Count; i++)
+        var word = words[0];
+        if (_maxWordLen > 0 && word.Length > _maxWordLen)
         {
-            if (long.TryParse(words[i], out long number))
+            word = word[..(int)_maxWordLen];
+        }
+        foreach (var item in vocabList)
+        {
+            var verbWords = item.Values;
+            foreach (var syn in verbWords)
             {
-                words.RemoveAt(i);
-                return ("#", number.ToString()); // numeric noun, normalized
+                if (word.Equals(syn, OIC))
+                {
+                    word = words[0]; // use original string
+                    words.RemoveAt(0);
+                    return (item.Key, word);
+                }
             }
         }
         return (null, null);
     }
 
-    private static void RemoveArticles(List<ParserItem> articles, ref List<string> words)
+    private static (string?, string?, string?) GetNoun(List<ParserItem> nounList, ref List<string> words)
     {
-        for (int i = words.Count - 1; i >= 0; i--)
+        // remove articles such as "the", "a", "an"
+        RemoveArticles(_articles, ref words);
+        // find any adjectives
+        var adjectivesFound = new List<ParserItem>();
+        string? adjectiveList = null;
+        while (words.Count > 0)
         {
-            foreach (var item in articles)
+            var foundAdjective = false;
+            foreach (var item in _adjectives)
             {
-                var articleWords = item.Values;
-                foreach (var syn in articleWords)
+                if (item.Key.Equals(words[0], OIC))
                 {
-                    if (words[i].Equals(syn, OIC))
+                    foundAdjective = true;
+                    adjectivesFound.Add(item);
+                    if (adjectiveList == null)
                     {
-                        words.RemoveAt(i);
+                        adjectiveList = item.Key;
+                    }
+                    else
+                    {
+                        adjectiveList += "," + item.Key;
+                    }
+                    words.RemoveAt(0);
+                    break;
+                }
+            }
+            if (!foundAdjective)
+            {
+                break;
+            }
+        }
+        // find noun
+        (var noun, var nounWord) = GetMatchingFirstWord(nounList, ref words);
+        if (noun != null)
+        {
+            // verify that all adjectives apply to this noun
+            var validAdjective = true;
+            foreach (var adj in adjectivesFound)
+            {
+                var foundNoun = false;
+                foreach (var tempNoun in adj.Values)
+                {
+                    if (noun.Equals(tempNoun, OIC))
+                    {
+                        foundNoun = true;
                         break;
                     }
+                }
+                if (!foundNoun)
+                {
+                    validAdjective = false;
+                    break;
+                }
+            }
+            if (validAdjective)
+            {
+                return (noun, nounWord, adjectiveList);
+            }
+        }
+        // check for numeric noun
+        if (words.Count > 0)
+        {
+            if (long.TryParse(words[0], out long number))
+            {
+                words.RemoveAt(0);
+                return ("#", number.ToString(), adjectiveList); // numeric noun, normalized
+            }
+        }
+        // no noun found
+        return (null, null, null);
+    }
+
+    private static void RemoveArticles(List<ParserItem> articles, ref List<string> words)
+    {
+        if (words.Count == 0)
+        {
+            return;
+        }
+        foreach (var item in articles)
+        {
+            foreach (var article in item.Values)
+            {
+                if (words[0].Equals(article, OIC))
+                {
+                    words.RemoveAt(0);
+                    break;
                 }
             }
         }
