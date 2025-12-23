@@ -6,6 +6,9 @@ namespace Grif;
 
 public static class IO
 {
+    /// <summary>
+    /// Returns the full path to a save directory within the user's Documents folder.
+    /// </summary>
     public static string GetSavePath(string filebase)
     {
         var result = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -18,12 +21,60 @@ public static class IO
         return result;
     }
 
+    public static Grod? OpenFile(string filename)
+    {
+        if (string.IsNullOrWhiteSpace(filename))
+        {
+            throw new ArgumentException("Filename cannot be null or whitespace.", nameof(filename));
+        }
+        if (Directory.Exists(filename))
+        {
+            Grod? baseGrod = null;
+            foreach (var file in Directory.GetFiles(filename, "*" + DATA_EXTENSION))
+            {
+                var grod = OpenGrifFile(file);
+                if (baseGrod == null)
+                {
+                    baseGrod = grod;
+                }
+                else
+                {
+                    grod.Parent = baseGrod;
+                    baseGrod = grod;
+                }
+            }
+            return baseGrod;
+        }
+        else if (!File.Exists(filename))
+        {
+            throw new FileNotFoundException("The specified file does not exist.", filename);
+        }
+        if (Path.GetExtension(filename).Equals(DATA_EXTENSION, OIC) ||
+            Path.GetExtension(filename).Equals(SAVE_EXTENSION, OIC))
+        {
+            return OpenGrifFile(filename);
+        }
+        else if (Path.GetExtension(filename).Equals(STACK_EXTENSION, OIC))
+        {
+            return OpenGrifStack(filename);
+        }
+        else
+        {
+            throw new NotSupportedException("Unsupported file format.");
+        }
+    }
+
     public static List<GrodItem> ReadGrif(string filePath)
+    {
+        using var reader = new StreamReader(filePath);
+        return ReadGrif(reader);
+    }
+
+    public static List<GrodItem> ReadGrif(StreamReader stream)
     {
         List<GrodItem> items = [];
         var jsonFormat = false;
-        using var reader = new StreamReader(filePath);
-        var content = reader.ReadToEnd();
+        var content = stream.ReadToEnd();
         int index = 0;
         string key;
         string value;
@@ -67,13 +118,21 @@ public static class IO
 
     public static void WriteGrif(string filePath, List<GrodItem> items, bool jsonFormat)
     {
+        using var stream = StreamGrif(filePath, items, jsonFormat);
+        using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+        stream.Position = 0;
+        stream.CopyTo(fileStream);
+    }
+
+    public static Stream StreamGrif(string filePath, List<GrodItem> items, bool jsonFormat)
+    {
+        using var writer = new MemoryStream();
         var needsComma = false;
         string value;
-        using var writer = new StreamWriter(filePath);
-        writer.Write(HeaderComment(filePath, jsonFormat));
+        writer.Write(Encoding.UTF8.GetBytes(HeaderComment(filePath, jsonFormat)));
         if (jsonFormat)
         {
-            writer.WriteLine("{");
+            writer.Write(Encoding.UTF8.GetBytes("{\r\n"));
         }
         foreach (var item in items)
         {
@@ -81,31 +140,32 @@ public static class IO
             {
                 if (needsComma)
                 {
-                    writer.WriteLine(",");
+                    writer.Write(Encoding.UTF8.GetBytes(",\r\n"));
                 }
-                writer.Write('\t');
-                writer.Write('\"');
-                writer.Write(EncodeString(item.Key));
-                writer.Write("\":");
+                writer.Write(Encoding.UTF8.GetBytes("\t\""));
+                writer.Write(Encoding.UTF8.GetBytes(EncodeString(item.Key)));
+                writer.Write(Encoding.UTF8.GetBytes("\":"));
             }
             else
             {
-                writer.WriteLine(item.Key);
+                writer.Write(Encoding.UTF8.GetBytes(EncodeString(item.Key)));
+                writer.Write(Encoding.UTF8.GetBytes(EncodeString("\r\n")));
             }
             if (IsScript(item.Value))
             {
                 // If the value starts with '@', it is a script
                 if (jsonFormat)
                 {
-                    writer.Write(" \"");
+                    writer.Write(Encoding.UTF8.GetBytes(" \""));
                     value = CompressScript(item.Value);
-                    writer.Write(EncodeString(value));
-                    writer.Write('\"');
+                    writer.Write(Encoding.UTF8.GetBytes(EncodeString(value)));
+                    writer.Write(Encoding.UTF8.GetBytes("\""));
                     needsComma = true;
                 }
                 else
                 {
-                    writer.WriteLine(PrettyScript(item.Value, true));
+                    writer.Write(Encoding.UTF8.GetBytes(PrettyScript(item.Value, true)));
+                    writer.Write(Encoding.UTF8.GetBytes(EncodeString("\r\n")));
                 }
             }
             else
@@ -113,9 +173,9 @@ public static class IO
                 value = item.Value ?? NULL;
                 if (jsonFormat)
                 {
-                    writer.Write(" \"");
-                    writer.Write(EncodeString(value));
-                    writer.Write('\"');
+                    writer.Write(Encoding.UTF8.GetBytes(" \""));
+                    writer.Write(Encoding.UTF8.GetBytes(EncodeString(value)));
+                    writer.Write(Encoding.UTF8.GetBytes("\""));
                     needsComma = true;
                 }
                 else
@@ -134,19 +194,71 @@ public static class IO
                         {
                             value = value[..^1] + SPACE_CHAR;
                         }
-                        writer.WriteLine($"\t{value}");
+                        writer.Write(Encoding.UTF8.GetBytes($"\t{value}\r\n"));
                     }
                 }
             }
         }
         if (jsonFormat)
         {
-            writer.WriteLine();
-            writer.WriteLine("}");
+            writer.Write(Encoding.UTF8.GetBytes("\r\n}"));
         }
+        return writer;
     }
 
     #region Private
+
+    private static Grod? OpenGrifStack(string filename)
+    {
+        Grod? baseGrod = null;
+        var path = Path.GetDirectoryName(filename) ?? ".";
+        foreach (var line in File.ReadLines(filename))
+        {
+            var tempLine = line.Trim();
+            if (tempLine.Length == 0 || tempLine.StartsWith("//"))
+            {
+                continue;
+            }
+            if (string.IsNullOrEmpty(Path.GetDirectoryName(tempLine)))
+            {
+                tempLine = Path.Combine(path, tempLine);
+            }
+            if (!Path.HasExtension(tempLine))
+            {
+                tempLine += DATA_EXTENSION;
+            }
+            var grod = OpenGrifFile(tempLine);
+            if (baseGrod == null)
+            {
+                baseGrod = grod;
+            }
+            else
+            {
+                grod.Parent = baseGrod;
+                baseGrod = grod;
+            }
+        }
+        return baseGrod;
+    }
+
+    private static Grod OpenGrifFile(string filename)
+    {
+        if (string.IsNullOrWhiteSpace(filename))
+        {
+            throw new ArgumentException("Filename cannot be null or whitespace.", nameof(filename));
+        }
+        if (!File.Exists(filename))
+        {
+            throw new FileNotFoundException("The specified file does not exist.", filename);
+        }
+        var items = ReadGrif(filename);
+        var grod = new Grod
+        {
+            Name = filename
+        };
+        grod.AddItems(items);
+        return grod;
+    }
 
     private static string EncodeString(string value)
     {

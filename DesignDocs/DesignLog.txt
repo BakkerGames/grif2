@@ -282,3 +282,6 @@
 - BREAKING CHANGE: adjectives are defined in reverse from GRIF 1.0.
 - Changed adjectives to "adjective.black=cloak" instead of "adjective.cloak=black".
 - Include adjectives in the input sent to the game for further processing. (Which ball?)
+
+2025-12-22
+- Moved opening/writing files/streams to IO class.

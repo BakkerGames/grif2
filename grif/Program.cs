@@ -11,14 +11,19 @@ internal class Program
     private static int maxOutputWidth = 0;
     private static bool uppercaseInput = false;
 
-    private static readonly List<string> fileList = [];
     private static string? inputFilename;
     private static string? splitInput;
     private static string? outputFilename;
 
     internal static async Task Main(string[] args)
     {
-        var parseResult = ParseParameters(args);
+        Grod baseGrod = new();
+        var parseResult = ParseParameters(args, ref baseGrod);
+        if (baseGrod == null)
+        {
+            Environment.Exit(1);
+            return;
+        }
         if (parseResult != 0)
         {
             Environment.Exit(parseResult);
@@ -26,15 +31,6 @@ internal class Program
         }
         // load data
         var game = new IFGame();
-        Grod baseGrod = new(fileList[0]);
-        baseGrod.AddItems(IO.ReadGrif(fileList[0]));
-        for (int i = 1; i < fileList.Count; i++)
-        {
-            var newgrod = new Grod(fileList[i]);
-            newgrod.AddItems(IO.ReadGrif(fileList[i]));
-            newgrod.Parent = baseGrod;
-            baseGrod = newgrod;
-        }
         var gameName = baseGrod.Get(GAMENAME, true);
         if (string.IsNullOrWhiteSpace(gameName))
         {
@@ -95,7 +91,7 @@ internal class Program
         result.AppendLine();
         result.AppendLine($"Version {IFGame.Version}");
         result.AppendLine();
-        result.AppendLine("grif <filename.grif | directory>");
+        result.AppendLine("grif <filename.grif | filename.grifstack | directory>");
         result.AppendLine("     [-h  | --help | -?]");
         result.AppendLine("     [-i  | --input  <filename>]");
         result.AppendLine("     [-si | --split-input <splitchar>]");
@@ -106,213 +102,131 @@ internal class Program
         return result.ToString();
     }
 
-    private static int ParseParameters(string[] args)
+    private static int ParseParameters(string[] args, ref Grod baseGrod)
     {
         if (args.Length == 0)
         {
             OutputText(Syntax());
             return 1;
         }
-        int index = 0;
-        while (index < args.Length)
+        try
         {
-            if (args[index].StartsWith('-'))
+            int index = 0;
+            while (index < args.Length)
             {
-                if (index + 1 >= args.Length)
+                if (args[index].StartsWith('-'))
                 {
-                    OutputText($"Argument must have a value: {args[index]}");
-                    OutputText(Syntax());
-                    return 2;
-                }
-                if (args[index].Equals("-h", OIC) ||
-                    args[index].Equals("--help", OIC) ||
-                    args[index].Equals("-?"))
-                {
-                    OutputText(Syntax());
-                    return 2;
-                }
-                else if (args[index].Equals("-i", OIC) ||
-                    args[index].Equals("--input", OIC))
-                {
-                    index++;
-                    inputFilename = args[index++];
-                    if (!File.Exists(inputFilename))
+                    if (index + 1 >= args.Length)
                     {
-                        OutputText($"Input file not found: {inputFilename}");
+                        OutputText($"Argument must have a value: {args[index]}");
                         OutputText(Syntax());
                         return 2;
                     }
-                }
-                else if (args[index].Equals("-si", OIC) ||
-                    args[index].Equals("--split-input", OIC))
-                {
-                    index++;
-                    splitInput = args[index++];
-                }
-                else if (args[index].Equals("-o", OIC) ||
-                    args[index].Equals("--output", OIC))
-                {
-                    index++;
-                    var tempFilename = args[index++];
-                    try
+                    if (args[index].Equals("-h", OIC) ||
+                        args[index].Equals("--help", OIC) ||
+                        args[index].Equals("-?"))
                     {
-                        // check if file can be created
-                        var outStream = File.CreateText(tempFilename);
-                        outStream.Close();
-                        outputFilename = tempFilename;
-                    }
-                    catch (Exception)
-                    {
-                        OutputText($"Error creating output file: {tempFilename}");
                         OutputText(Syntax());
                         return 2;
                     }
-                }
-                else if (args[index].Equals("-m", OIC) ||
-                    args[index].Equals("--mod", OIC))
-                {
-                    index++;
-                    var modFilename = args[index++];
-                    if (File.Exists(modFilename))
+                    else if (args[index].Equals("-i", OIC) ||
+                        args[index].Equals("--input", OIC))
                     {
-                        fileList.Add(modFilename);
-                    }
-                    else if (File.Exists(modFilename + DATA_EXTENSION))
-                    {
-                        fileList.Add(modFilename + DATA_EXTENSION);
-                    }
-                    else if (Directory.Exists(modFilename))
-                    {
-                        foreach (string file in Directory.GetFiles(modFilename, "*" + DATA_EXTENSION))
+                        index++;
+                        inputFilename = args[index++];
+                        if (!File.Exists(inputFilename))
                         {
-                            fileList.Add(file);
+                            OutputText($"Input file not found: {inputFilename}");
+                            OutputText(Syntax());
+                            return 2;
+                        }
+                    }
+                    else if (args[index].Equals("-si", OIC) ||
+                        args[index].Equals("--split-input", OIC))
+                    {
+                        index++;
+                        splitInput = args[index++];
+                    }
+                    else if (args[index].Equals("-o", OIC) ||
+                        args[index].Equals("--output", OIC))
+                    {
+                        index++;
+                        var tempFilename = args[index++];
+                        try
+                        {
+                            // check if file can be created
+                            var outStream = File.CreateText(tempFilename);
+                            outStream.Close();
+                            outputFilename = tempFilename;
+                        }
+                        catch (Exception)
+                        {
+                            OutputText($"Error creating output file: {tempFilename}");
+                            OutputText(Syntax());
+                            return 2;
+                        }
+                    }
+                    else if (args[index].Equals("-m", OIC) ||
+                        args[index].Equals("--mod", OIC))
+                    {
+                        index++;
+                        var modFilename = args[index++];
+                        var grod = IO.OpenFile(modFilename); // to check if valid
+                        if (grod == null)
+                        {
+                            OutputText($"Error opening mod file: {modFilename}");
+                            OutputText(Syntax());
+                            return 2;
+                        }
+                        if (baseGrod == null || baseGrod.Count(false) == 0)
+                        {
+                            baseGrod = grod;
+                        }
+                        else
+                        {
+                            grod.Parent = baseGrod;
+                            baseGrod = grod;
                         }
                     }
                     else
                     {
-                        OutputText($"File/directory not found: {modFilename}");
+                        OutputText($"Unknown argument: {args[index++]}");
+                        OutputText(Syntax());
+                        return 2;
                     }
                 }
                 else
                 {
-                    OutputText($"Unknown argument: {args[index++]}");
-                    OutputText(Syntax());
-                    return 2;
-                }
-            }
-            else
-            {
-                var filename = args[index++];
-                if (!CheckFilename(filename))
-                {
-                    return 2;
+                    var filename = args[index++];
+                    var grod = IO.OpenFile(filename);
+                    if (grod == null)
+                    {
+                        OutputText($"Error opening file: {filename}");
+                        OutputText(Syntax());
+                        return 2;
+                    }
+                    if (baseGrod == null || baseGrod.Count(false) == 0)
+                    {
+                        baseGrod = grod;
+                    }
+                    else
+                    {
+                        grod.Parent = baseGrod;
+                        baseGrod = grod;
+                    }
                 }
             }
         }
-        if (fileList.Count == 0)
+        catch (Exception ex)
+        {
+            OutputText($"Error processing parameters: {ex.Message}");
+        }
+        if (baseGrod == null || baseGrod.Count(false) == 0)
         {
             OutputText(Syntax());
             return 1;
         }
         return 0;
-    }
-
-    private static bool CheckFilename(string filename)
-    {
-        var extension = Path.GetExtension(filename);
-        if (extension.Equals(STACK_EXTENSION, OIC))
-        {
-            return CheckStackFile(filename);
-        }
-        else if (extension.Equals(DATA_EXTENSION, OIC))
-        {
-            return CheckDataFile(filename);
-        }
-        else if (File.Exists(filename + STACK_EXTENSION))
-        {
-            return CheckStackFile(filename);
-        }
-        else if (File.Exists(filename + DATA_EXTENSION))
-        {
-            return CheckDataFile(filename);
-        }
-        else if (Directory.Exists(filename))
-        {
-            return CheckDirectoryFiles(filename);
-        }
-        else
-        {
-            OutputText($"File/directory not found: {filename}");
-            return false;
-        }
-    }
-
-    private static bool CheckStackFile(string filename)
-    {
-        var path = Path.GetDirectoryName(filename) ?? ".";
-        var found = false;
-        foreach (var line in File.ReadLines(filename))
-        {
-            var tempLine = line.Trim();
-            if (tempLine.Length == 0 || tempLine.StartsWith("//"))
-            {
-                continue;
-            }
-            if (string.IsNullOrEmpty(Path.GetDirectoryName(tempLine))) {
-                tempLine = Path.Combine(path, tempLine);
-            }
-            if (!CheckFilename(tempLine))
-            {
-                return false;
-            }
-            found = true;
-        }
-        return found;
-    }
-
-    private static bool CheckDataFile(string filename)
-    {
-        if (string.IsNullOrEmpty(Path.GetExtension(filename)))
-        {
-            filename += DATA_EXTENSION;
-        }
-        if (!File.Exists(filename))
-        {
-            return false;
-        }
-        if (!Path.GetExtension(filename).Equals(DATA_EXTENSION, OIC))
-        {
-            OutputText($"Data file must have {DATA_EXTENSION} extension: {filename}");
-            return false;
-        }
-        fileList.Add(filename);
-        return true;
-    }
-
-    private static bool CheckDirectoryFiles(string directory)
-    {
-        var stacks = Directory.GetFiles(directory, "*" + STACK_EXTENSION);
-        var files = Directory.GetFiles(directory, "*" + DATA_EXTENSION);
-        if (stacks.Length == 0 && files.Length == 0)
-        {
-            OutputText($"No stack or data files found in directory: {directory}");
-            return false;
-        }
-        foreach (var stack in stacks)
-        {
-            if (!CheckStackFile(stack))
-            {
-                return false;
-            }
-        }
-        foreach (var file in files)
-        {
-            if (!CheckDataFile(file))
-            {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static void Input(object sender)

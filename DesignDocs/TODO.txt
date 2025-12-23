@@ -1,4 +1,4 @@
-adjectives
+* adjectives
 script object with internal index
 script object return
 __config values
