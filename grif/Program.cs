@@ -5,6 +5,8 @@ namespace Grif;
 
 internal class Program
 {
+    private const string OUTCHANNEL_SLEEP = "#SLEEP;";
+
     private static readonly Queue<string> inputQueue = new();
 
     private static int outputCount = 0;
@@ -34,7 +36,9 @@ internal class Program
         var gameName = baseGrod.Get(GAMENAME, true);
         if (string.IsNullOrWhiteSpace(gameName))
         {
-            gameName = "Unnamed Game";
+            OutputText($"Error: {GAMENAME} not found in data file.");
+            Environment.Exit(1);
+            return;
         }
         game.Initialize(baseGrod, gameName, null);
         if (inputFilename != null)
@@ -154,6 +158,11 @@ internal class Program
                         var tempFilename = args[index++];
                         try
                         {
+                            var path = Path.GetDirectoryName(tempFilename);
+                            if (!string.IsNullOrEmpty(path) && !Directory.Exists(path))
+                            {
+                                Directory.CreateDirectory(path);
+                            }
                             // check if file can be created
                             var outStream = File.CreateText(tempFilename);
                             outStream.Close();
@@ -257,7 +266,28 @@ internal class Program
 
     private static void Output(object sender, GrifMessage e)
     {
-        OutputText(e.Value);
+        if (e.Type == MessageType.Text)
+        {
+            OutputText(e.Value);
+            return;
+        }
+        if (e.Type == MessageType.Error)
+        {
+            OutputText(NL_CHAR);
+            OutputText("### ERROR: ");
+            OutputText(e.Value);
+            //OutputText(e.ExtraValue ?? "");
+            return;
+        }
+        if (e.Value.Equals(OUTCHANNEL_SLEEP, OIC))
+        {
+            if (!long.TryParse(e.ExtraValue, out long value))
+            {
+                throw new Exception($"Invalid sleep duration: {e.ExtraValue}");
+            }
+            Thread.Sleep((int)value);
+            return;
+        }
     }
 
     private static void OutputText(string text)

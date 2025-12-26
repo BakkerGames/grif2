@@ -1,5 +1,5 @@
-using Grif;
 using System.Text;
+using Grif;
 using static Grif.Common;
 using static Grif.Dags;
 

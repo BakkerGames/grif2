@@ -285,3 +285,8 @@
 
 2025-12-22
 - Moved opening/writing files/streams to IO class.
+
+2025-12-26
+- Moved OUTCHANNEL_SLEEP to Program.cs for handling there.
+- Ignore unknown OUTCHANNEL commands in IFGame class.
+- Moved @sleep() to be a function in Cloak of Darkness game only.

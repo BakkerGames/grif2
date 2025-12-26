@@ -37,7 +37,8 @@ public class TestDags
         Grod grod = new("testGrod");
         string script = $"{WRITE_TOKEN}abc,def)";
         var result = Dags.Process(grod, script);
-        Assert.That(result, Is.EqualTo(new List<GrifMessage> { new(MessageType.Text, "abc"), new(MessageType.Text, "def") }));
+        Assert.That(result, Is.EqualTo(new List<GrifMessage>
+            { new(MessageType.Text, "abc"), new(MessageType.Text, "def") }));
     }
 
     [Test]
@@ -46,7 +47,10 @@ public class TestDags
         Grod grod = new("testGrod");
         string script = $"{WRITE_TOKEN}abc";
         var result = Dags.Process(grod, script);
-        var expected = new List<GrifMessage> { new(MessageType.Error, $"Error processing command at index 2:\r\nMissing closing parenthesis\r\n0: {WRITE_TOKEN}\r\n1: abc\r\n") };
+        var expected = new List<GrifMessage> {
+            new(MessageType.Error,
+                $"Error processing command at index 2: Missing closing parenthesis\r\n",
+                $"0: {WRITE_TOKEN}\r\n1: abc\r\n") };
         Assert.That(result, Is.EqualTo(expected));
     }
 
@@ -56,7 +60,10 @@ public class TestDags
         Grod grod = new("testGrod");
         string script = $"{WRITE_TOKEN})";
         var result = Dags.Process(grod, script);
-        var expected = new List<GrifMessage> { new(MessageType.Error, $"Error processing command at index 2:\r\nExpected at least one parameter, but got 0\r\n0: {WRITE_TOKEN}\r\n1: )\r\n") };
+        var expected = new List<GrifMessage> {
+            new(MessageType.Error,
+                $"Error processing command at index 2: Expected at least one parameter, but got 0\r\n",
+                $"0: {WRITE_TOKEN}\r\n1: )\r\n") };
         Assert.That(result, Is.EqualTo(expected));
     }
 
@@ -409,7 +416,10 @@ public class TestDags
         Grod grod = new("testGrod");
         string script = "@unknown()";
         var result = Dags.Process(grod, script);
-        var expected = new List<GrifMessage> { new(MessageType.Error, "Error processing command at index 2:\r\nUnknown token: @unknown(\r\n0: @unknown(\r\n1: )\r\n") };
+        var expected = new List<GrifMessage> {
+            new(MessageType.Error,
+                "Error processing command at index 2: Unknown token: @unknown(\r\n",
+                "0: @unknown(\r\n1: )\r\n") };
         Assert.That(result, Is.EqualTo(expected));
     }
 
@@ -472,7 +482,9 @@ public class TestDags
         string script = $"{DIVTO_TOKEN}counter,0){GET_TOKEN}counter)";
         var result = Dags.Process(grod, script);
         var expected = new List<GrifMessage> {
-            new(MessageType.Error, $"Error processing command at index 5:\r\nDivision by zero is not allowed.\r\n0: {DIVTO_TOKEN}\r\n1: counter\r\n2: ,\r\n3: 0\r\n4: )\r\n5: {GET_TOKEN}\r\n6: counter\r\n7: )\r\n"),
+            new(MessageType.Error,
+                $"Error processing command at index 5: Division by zero is not allowed.\r\n",
+                $"0: {DIVTO_TOKEN}\r\n1: counter\r\n2: ,\r\n3: 0\r\n4: )\r\n5: {GET_TOKEN}\r\n6: counter\r\n7: )\r\n"),
             new(MessageType.Internal, counterValue)
         };
         Assert.That(result, Is.Not.Null);
@@ -489,7 +501,9 @@ public class TestDags
         string script = $"{ADDTO_TOKEN}counter,3){GET_TOKEN}counter)";
         var result = Dags.Process(grod, script);
         var expected = new List<GrifMessage> {
-            new(MessageType.Error, $"Error processing command at index 5:\r\nInvalid number: five\r\n0: {ADDTO_TOKEN}\r\n1: counter\r\n2: ,\r\n3: 3\r\n4: )\r\n5: {GET_TOKEN}\r\n6: counter\r\n7: )\r\n"),
+            new(MessageType.Error,
+                $"Error processing command at index 5: Invalid number: five\r\n",
+                $"0: {ADDTO_TOKEN}\r\n1: counter\r\n2: ,\r\n3: 3\r\n4: )\r\n5: {GET_TOKEN}\r\n6: counter\r\n7: )\r\n"),
             new(MessageType.Internal, counterValue)
         };
         Assert.That(result, Is.Not.Null);
@@ -578,7 +592,10 @@ public class TestDags
         Grod grod = new("testGrod");
         string script = $"{DIV_TOKEN}6,0)";
         var result = Dags.Process(grod, script);
-        var expected = new List<GrifMessage> { new(MessageType.Error, $"Error processing command at index 5:\r\nDivision by zero is not allowed.\r\n0: {DIV_TOKEN}\r\n1: 6\r\n2: ,\r\n3: 0\r\n4: )\r\n") };
+        var expected = new List<GrifMessage> {
+            new(MessageType.Error,
+                $"Error processing command at index 5: Division by zero is not allowed.\r\n",
+                $"0: {DIV_TOKEN}\r\n1: 6\r\n2: ,\r\n3: 0\r\n4: )\r\n") };
         Assert.That(result, Is.EqualTo(expected));
     }
 
@@ -588,7 +605,10 @@ public class TestDags
         Grod grod = new("testGrod");
         string script = $"{MOD_TOKEN}20,0)";
         var result = Dags.Process(grod, script);
-        var expected = new List<GrifMessage> { new(MessageType.Error, $"Error processing command at index 5:\r\nAttempted to divide by zero.\r\n0: {MOD_TOKEN}\r\n1: 20\r\n2: ,\r\n3: 0\r\n4: )\r\n") };
+        var expected = new List<GrifMessage> {
+            new(MessageType.Error,
+                $"Error processing command at index 5: Attempted to divide by zero.\r\n",
+                $"0: {MOD_TOKEN}\r\n1: 20\r\n2: ,\r\n3: 0\r\n4: )\r\n") };
         Assert.That(result, Is.EqualTo(expected));
     }
 
@@ -598,7 +618,10 @@ public class TestDags
         Grod grod = new("testGrod");
         string script = "@invalidcommand()";
         var result = Dags.Process(grod, script);
-        var expected = new List<GrifMessage> { new(MessageType.Error, "Error processing command at index 2:\r\nUnknown token: @invalidcommand(\r\n0: @invalidcommand(\r\n1: )\r\n") };
+        var expected = new List<GrifMessage> {
+            new(MessageType.Error,
+                "Error processing command at index 2: Unknown token: @invalidcommand(\r\n",
+                "0: @invalidcommand(\r\n1: )\r\n") };
         Assert.That(result, Is.EqualTo(expected));
     }
 

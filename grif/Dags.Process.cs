@@ -644,10 +644,6 @@ public partial class Dags
                     CheckParameterCount(p, 1);
                     result.Add(new GrifMessage(MessageType.Internal, TrueFalse(IsNullOrEmpty(p[0].Value))));
                     break;
-                case PICTURE_TOKEN:
-                    CheckParameterCount(p, 1);
-                    result.Add(new GrifMessage(MessageType.OutChannel, OUTCHANNEL_PICTURE, p[0].Value));
-                    break;
                 case RAND_TOKEN:
                     CheckParameterCount(p, 1);
                     long1 = GetNumberValue(p[0].Value);
@@ -717,11 +713,6 @@ public partial class Dags
                     {
                         result.Add(new GrifMessage(MessageType.OutChannel, p[0].Value, p[1].Value));
                     }
-                    break;
-                case SLEEP_TOKEN:
-                    CheckParameterCount(p, 1);
-                    long1 = GetNumberValue(p[0].Value);
-                    result.Add(new GrifMessage(MessageType.OutChannel, OUTCHANNEL_SLEEP, long1.ToString()));
                     break;
                 case SUB_TOKEN:
                     CheckParameterCount(p, 2);
@@ -814,6 +805,10 @@ public partial class Dags
                     result.Add(new GrifMessage(MessageType.Text, NL_CHAR));
                     break;
                 default:
+                    if (token.Equals("@sleep(", OIC))
+                    {
+                        var sleepParam = p.Count > 0 ? GetNumberValue(p[0].Value) : 0;
+                    }
                     var userResult = GetUserDefinedFunctionValues(token, p, grod);
                     result.AddRange(userResult);
                     break;
@@ -824,8 +819,9 @@ public partial class Dags
         {
             // Handle exceptions and return error item
             StringBuilder error = new();
-            error.AppendLine($"Error processing command at index {index}:");
+            error.Append($"Error processing command at index {index}: ");
             error.AppendLine(ex.Message);
+            var extraInfo = new StringBuilder();
             for (int i = 0; i < tokens.Length; i++)
             {
                 var token = tokens[i];
@@ -833,9 +829,9 @@ public partial class Dags
                 {
                     token = string.Concat(token.AsSpan(0, 50), "...");
                 }
-                error.AppendLine($"{i}: {token}");
+                extraInfo.AppendLine($"{i}: {token}");
             }
-            result.Add(new GrifMessage(MessageType.Error, error.ToString()));
+            result.Add(new GrifMessage(MessageType.Error, error.ToString(), extraInfo.ToString()));
             return result;
         }
     }

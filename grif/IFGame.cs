@@ -1,7 +1,7 @@
 ﻿using static Grif.Common;
 using static Grif.Dags;
-using static Grif.IO;
 using static Grif.IFParser;
+using static Grif.IO;
 
 namespace Grif;
 
@@ -10,7 +10,7 @@ public delegate void OutputEventHandler(object sender, GrifMessage e);
 
 public class IFGame
 {
-    public static string Version { get { return "2.2025.1209"; } }
+    public static string Version { get { return "2.2025.1226"; } }
 
     private Grod _baseGrod = new("");
     private Grod _overlayGrod = new("");
@@ -183,7 +183,7 @@ public class IFGame
         var inputItems = ParseInput(_overlayGrod, inputMessage.Value);
         foreach (var item in inputItems ?? [])
         {
-            OutputMessages.Enqueue(new GrifMessage(item.Type, item.Value, item.ExtraValue));
+            OutputMessages.Enqueue(item);
         }
     }
 
@@ -227,51 +227,51 @@ public class IFGame
         }
     }
 
-    private void HandleOutChannel(GrifMessage item)
+    private void HandleOutChannel(GrifMessage message)
     {
         bool exists;
-        if (item.Value.Equals(OUTCHANNEL_GAMEOVER, OIC))
+        if (message.Value.Equals(OUTCHANNEL_GAMEOVER, OIC))
         {
             GameOver = true;
             return;
         }
-        if (item.Value.Equals(OUTCHANNEL_EXISTS_SAVE, OIC))
+        if (message.Value.Equals(OUTCHANNEL_EXISTS_SAVE, OIC))
         {
             var savefile = Path.Combine(_saveBasePath, SAVE_FILENAME + SAVE_EXTENSION);
             exists = File.Exists(savefile);
             _overlayGrod.Set(INCHANNEL, exists ? "true" : "false");
             return;
         }
-        if (item.Value.Equals(OUTCHANNEL_EXISTS_SAVE_NAME, OIC))
+        if (message.Value.Equals(OUTCHANNEL_EXISTS_SAVE_NAME, OIC))
         {
-            if (item.ExtraValue == null)
+            if (message.ExtraValue == null)
             {
                 throw new Exception("Save filename not specified.");
             }
-            var savefile = Path.Combine(_saveBasePath, item.ExtraValue + SAVE_EXTENSION);
+            var savefile = Path.Combine(_saveBasePath, message.ExtraValue + SAVE_EXTENSION);
             exists = File.Exists(savefile);
             _overlayGrod.Set(INCHANNEL, exists ? "true" : "false");
             return;
         }
-        if (item.Value.Equals(OUTCHANNEL_SAVE, OIC))
+        if (message.Value.Equals(OUTCHANNEL_SAVE, OIC))
         {
             var savefile = Path.Combine(_saveBasePath, SAVE_FILENAME + SAVE_EXTENSION);
             var itemList = _overlayGrod.Items(false, true);
             WriteGrif(savefile, itemList, true);
             return;
         }
-        if (item.Value.Equals(OUTCHANNEL_SAVE_NAME, OIC))
+        if (message.Value.Equals(OUTCHANNEL_SAVE_NAME, OIC))
         {
-            if (item.ExtraValue == null)
+            if (message.ExtraValue == null)
             {
                 throw new Exception("Save filename not specified.");
             }
-            var savefile = Path.Combine(_saveBasePath, item.ExtraValue + SAVE_EXTENSION);
+            var savefile = Path.Combine(_saveBasePath, message.ExtraValue + SAVE_EXTENSION);
             var itemList = _overlayGrod.Items(false, true);
             WriteGrif(savefile, itemList, false);
             return;
         }
-        if (item.Value.Equals(OUTCHANNEL_RESTORE, OIC))
+        if (message.Value.Equals(OUTCHANNEL_RESTORE, OIC))
         {
             var savefile = Path.Combine(_saveBasePath, SAVE_FILENAME + SAVE_EXTENSION);
             if (!File.Exists(savefile))
@@ -283,13 +283,13 @@ public class IFGame
             _overlayGrod.AddItems(itemList);
             return;
         }
-        if (item.Value.Equals(OUTCHANNEL_RESTORE_NAME, OIC))
+        if (message.Value.Equals(OUTCHANNEL_RESTORE_NAME, OIC))
         {
-            if (item.ExtraValue == null)
+            if (message.ExtraValue == null)
             {
                 throw new Exception("Save filename not specified.");
             }
-            var savefile = Path.Combine(_saveBasePath, item.ExtraValue + SAVE_EXTENSION);
+            var savefile = Path.Combine(_saveBasePath, message.ExtraValue + SAVE_EXTENSION);
             if (!File.Exists(savefile))
             {
                 throw new FileNotFoundException(savefile);
@@ -299,12 +299,12 @@ public class IFGame
             _overlayGrod.AddItems(itemList);
             return;
         }
-        if (item.Value.Equals(OUTCHANNEL_RESTART, OIC))
+        if (message.Value.Equals(OUTCHANNEL_RESTART, OIC))
         {
             _overlayGrod.Clear(false); // clear only the user data
             return;
         }
-        if (item.Value.Equals(OUTCHANNEL_ASK, OIC))
+        if (message.Value.Equals(OUTCHANNEL_ASK, OIC))
         {
             if (InputEvent != null && InputMessages.Count == 0)
             {
@@ -318,7 +318,7 @@ public class IFGame
             _overlayGrod.Set(INCHANNEL, inputMessage.Value);
             return;
         }
-        if (item.Value.Equals(OUTCHANNEL_ENTER, OIC))
+        if (message.Value.Equals(OUTCHANNEL_ENTER, OIC))
         {
             if (InputEvent != null && InputMessages.Count == 0)
             {
@@ -331,30 +331,17 @@ public class IFGame
             _ = InputMessages.Dequeue();
             return;
         }
-        if (item.Value.Equals(OUTCHANNEL_SLEEP, OIC))
+        if (IsScript(message.Value))
         {
-            if (!long.TryParse(item.ExtraValue, out long value))
-            {
-                throw new Exception($"Invalid sleep duration: {item.ExtraValue}");
-            }
-            Thread.Sleep((int)value);
-            return;
-        }
-        if (IsScript(item.Value))
-        {
-            var outputItems = ProcessItems(_overlayGrod, [new GrifMessage(MessageType.Script, item.Value)]);
+            var outputItems = ProcessItems(_overlayGrod, [new GrifMessage(MessageType.Script, message.Value)]);
             foreach (var outputItem in outputItems)
             {
                 OutputMessages.Enqueue(outputItem);
             }
             return;
         }
-        if (item.Value.StartsWith('#') && item.Value.EndsWith(';'))
-        {
-            // future enhancements go here, just quietly ignore for now
-            return;
-        }
-        throw new Exception($"Unknown OutChannel command {item.Value}");
+        // Sent unknown outchannel message to calling program
+        OutputEvent?.Invoke(this, message);
     }
 
     #endregion
