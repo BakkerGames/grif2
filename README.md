@@ -22,3 +22,4 @@ GRIF is also a library that can be integrated into other applications to provide
 - Can return interleaved results including media paths
 - Can handle system events such as sleep
 - Can stack multiple GRIF files for modular game design
+- Outchannel support can be customized for different output methods
