@@ -118,15 +118,15 @@ public static class IO
 
     public static void WriteGrif(string filePath, List<GrodItem> items, bool jsonFormat)
     {
-        using var stream = StreamGrif(filePath, items, jsonFormat);
+        using var stream = GetGrifStream(filePath, items, jsonFormat);
         using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
         stream.Position = 0;
         stream.CopyTo(fileStream);
     }
 
-    public static Stream StreamGrif(string filePath, List<GrodItem> items, bool jsonFormat)
+    public static Stream GetGrifStream(string filePath, List<GrodItem> items, bool jsonFormat)
     {
-        using var writer = new MemoryStream();
+        var writer = new MemoryStream();
         var needsComma = false;
         string value;
         writer.Write(Encoding.UTF8.GetBytes(HeaderComment(filePath, jsonFormat)));
