@@ -290,3 +290,8 @@
 - Moved OUTCHANNEL_SLEEP to Program.cs for handling there.
 - Ignore unknown OUTCHANNEL commands in IFGame class.
 - Moved @sleep() to be a function in Cloak of Darkness game only.
+
+2025-12-27
+- Added more validation to GROD keys. Added TryValidateKey().
+- Split into GrifLib project for GROD, DAGS, and IFGame classes.
+- Grif project now only has Program.cs to run the game.

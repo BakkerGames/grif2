@@ -1,31 +1,61 @@
-﻿using static Grif.Common;
-using static Grif.Dags;
-using static Grif.IFParser;
-using static Grif.IO;
+﻿using static GrifLib.Common;
+using static GrifLib.Dags;
+using static GrifLib.IFParser;
+using static GrifLib.IO;
 
-namespace Grif;
+namespace GrifLib;
 
+/// <summary>
+/// Represents the method that handles an input event raised by a component or control.
+/// </summary>
 public delegate void InputEventHandler(object sender);
+
+/// <summary>
+/// Represents the method that will handle an output event raised by the system.
+/// </summary>
+/// <param name="sender">The source of the event.</param>
 public delegate void OutputEventHandler(object sender, GrifMessage e);
 
 public class IFGame
 {
-    public static string Version { get { return "2.2025.1226"; } }
+    /// <summary>
+    /// Gets the current version of the library.
+    /// </summary>
+    public static string Version { get { return "2.2025.1227"; } }
 
     private Grod _baseGrod = new("");
     private Grod _overlayGrod = new("");
     private string _saveBasePath = "";
     private string? _referenceBasePath;
 
+    /// <summary>
+    /// Occurs when an input action is performed, such as a key press or mouse event.
+    /// </summary>
     public event InputEventHandler? InputEvent;
+
+    /// <summary>
+    /// Occurs when output data is available or an output event is raised.
+    /// </summary>
     public event OutputEventHandler? OutputEvent;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the game has ended.
+    /// </summary>
     public bool GameOver { get; set; } = false;
 
+    /// <summary>
+    /// Gets the queue of input messages awaiting processing.
+    /// </summary>
     public Queue<GrifMessage> InputMessages { get; } = new();
 
+    /// <summary>
+    /// Gets the queue of messages that are pending to be sent or processed by the system.
+    /// </summary>
     public Queue<GrifMessage> OutputMessages { get; } = new();
 
+    /// <summary>
+    /// Initializes the game state, configuring save and reference paths and preparing the game data for use.
+    /// </summary>
     public void Initialize(Grod grod, string saveBasePath, string? referenceBasePath = null)
     {
         GameOver = false;
@@ -90,9 +120,12 @@ public class IFGame
         }
     }
 
+    /// <summary>
+    /// Processes and outputs the introductory message or script for the overlay.
+    /// </summary>
     public async Task Intro()
     {
-        var intro = _overlayGrod.Get(INTRO, true);
+        var intro = await Task.Run(() => _overlayGrod.Get(INTRO, true));
         if (IsScript(intro))
         {
             var introItems = await Task.Run(() => Process(_overlayGrod, intro));
@@ -112,6 +145,9 @@ public class IFGame
         }
     }
 
+    /// <summary>
+    /// Runs the main asynchronous game loop, processing input and output messages and advancing the game state until the game is over.
+    /// </summary>
     public async Task GameLoop()
     {
         while (true)
@@ -151,6 +187,9 @@ public class IFGame
         }
     }
 
+    /// <summary>
+    /// Generates and returns the current prompt text, processing scripts if present.
+    /// </summary>
     public string? Prompt()
     {
         var prompt = _overlayGrod.Get(PROMPT, true);
@@ -166,6 +205,9 @@ public class IFGame
         return prompt;
     }
 
+    /// <summary>
+    /// Generates and returns the text or script to be displayed after the prompt.
+    /// </summary>
     public string? AfterPrompt()
     {
         var afterPrompt = _overlayGrod.Get(AFTER_PROMPT, true);
@@ -178,6 +220,9 @@ public class IFGame
 
     #region Private routines
 
+    /// <summary>
+    /// Processes the specified input message and enqueues the resulting items for output.
+    /// </summary>
     private void ProcessInputMessage(GrifMessage inputMessage)
     {
         var inputItems = ParseInput(_overlayGrod, inputMessage.Value);
@@ -187,6 +232,9 @@ public class IFGame
         }
     }
 
+    /// <summary>
+    /// Processes an output message and dispatches it to the appropriate handler based on its type.
+    /// </summary>
     private void ProcessOutputMessage(GrifMessage message)
     {
         switch (message.Type)
@@ -213,6 +261,9 @@ public class IFGame
         }
     }
 
+    /// <summary>
+    /// Advances the game state by processing background scripts and enqueuing resulting output messages.
+    /// </summary>
     private void AdvanceGameState()
     {
         var keys = _overlayGrod.Keys(BACKGROUND_PREFIX, true, false);
@@ -227,6 +278,9 @@ public class IFGame
         }
     }
 
+    /// <summary>
+    /// Handles an outbound channel message by performing the corresponding action.
+    /// </summary>
     private void HandleOutChannel(GrifMessage message)
     {
         bool exists;

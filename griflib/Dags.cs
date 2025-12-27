@@ -1,17 +1,26 @@
-﻿using static Grif.Common;
+﻿using static GrifLib.Common;
 
-namespace Grif;
+namespace GrifLib;
 
 public partial class Dags
 {
+    /// <summary>
+    /// Random number generator for DAGS scripts.
+    /// </summary>
     private static readonly Random _random = new();
 
+    /// <summary>
+    /// Process a DAGS script.
+    /// </summary>
     public static List<GrifMessage> Process(Grod grod, string? script)
     {
         List<GrifMessage> items = [new GrifMessage(MessageType.Text, script ?? "")];
         return ProcessItems(grod, items);
     }
 
+    /// <summary>
+    /// Process a list of DAGS items.
+    /// </summary>
     public static List<GrifMessage> ProcessItems(Grod grod, List<GrifMessage> items)
     {
         List<GrifMessage> result = [];

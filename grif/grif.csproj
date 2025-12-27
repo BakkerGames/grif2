@@ -16,4 +16,8 @@
     <DebugType>embedded</DebugType>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\griflib\griflib.csproj" />
+  </ItemGroup>
+
 </Project>

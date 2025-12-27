@@ -1,5 +1,8 @@
-﻿namespace Grif;
+﻿namespace GrifLib;
 
+/// <summary>
+/// Specifies the type of a message within the messaging system.
+/// </summary>
 public enum MessageType
 {
     Error = -1,
@@ -11,4 +14,7 @@ public enum MessageType
     InChannel = 5,
 }
 
+/// <summary>
+/// Represents a Grif message with a specified type, value, and optional extra value.
+/// </summary>
 public record GrifMessage(MessageType Type, string Value, string? ExtraValue = null);

@@ -10,7 +10,7 @@ examine cloak
 examine hook
 drop cloak
 inv
-hang cloak on hook
+hang the dark, black, handsome, satin, velvet cloak upon the small, brass hook
 inv
 examine hook
 hang cloak
@@ -20,6 +20,8 @@ examine hook
 e
 s
 w
+save
+1
 s
 e
 read message

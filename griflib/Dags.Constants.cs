@@ -1,7 +1,8 @@
-﻿namespace Grif;
+﻿namespace GrifLib;
 
 public partial class Dags
 {
+    // List of DAGS command tokens
     public const string ABS_TOKEN = "@abs(";
     public const string ADDLIST_TOKEN = "@addlist(";
     public const string ADDTO_TOKEN = "@addto(";

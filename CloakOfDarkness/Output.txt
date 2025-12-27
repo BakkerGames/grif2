@@ -71,7 +71,7 @@ This isn't the best place to leave a smart cloak lying around.
 
 You aren't carrying anything.
 
->hang cloak on hook
+>hang the dark, black, handsome, satin, velvet cloak upon the small, brass hook
 
 The cloak is now hanging smartly on the hook.
 
@@ -121,6 +121,14 @@ in the sawdust on the floor.
 >w
 
 You can't go that direction.
+
+>save
+
+Enter the slot number of the save file (1-5):
+
+>1
+
+Save complete.
 
 >s
 

@@ -1,39 +1,66 @@
-﻿using static Grif.Common;
+﻿using static GrifLib.Common;
 
-namespace Grif;
+namespace GrifLib;
 
 public class Grod
 {
+    #region private definitions
+
+    // Lists of string representations for Boolean true and false values
     private readonly string[] _truthyList = ["y", "yes", "t", "1", "-1", TRUE];
     private readonly string[] _falseyList = ["n", "no", "f", "0", "", FALSE];
 
+    // Internal storage for key-value pairs, using case-insensitive keys
     private readonly Dictionary<string, string?> _data = new(StringComparer.OrdinalIgnoreCase);
 
+    #endregion
+
+    /// <summary>
+    /// Initializes a new instance of the Grod class.
+    /// </summary>
     public Grod()
     {
     }
 
-    public Grod(string name)
+    /// <summary>
+    /// Initializes a new instance of the Grod class with the specified name.
+    /// </summary>
+    public Grod(string? name)
     {
         Name = name;
     }
 
-    public Grod(string name, Grod? parent)
+    /// <summary>
+    /// Initializes a new instance of the Grod class with the specified name and parent.
+    /// </summary>
+    public Grod(string? name, Grod? parent)
     {
         Name = name;
         Parent = parent;
     }
 
+    /// <summary>
+    /// Gets or sets the name associated with the object.
+    /// </summary>
     public string? Name { get; set; }
 
+    /// <summary>
+    /// Gets or sets the parent Grod of this instance.
+    /// </summary>
     public Grod? Parent { get; set; }
 
+    /// <summary>
+    /// Returns the number of keys in the collection, optionally including keys from nested collections.
+    /// </summary>
     public int Count(bool recursive)
     {
         var keys = Keys(recursive, false);
         return keys.Count;
     }
 
+    /// <summary>
+    /// Retrieves the value associated with the specified key, optionally searching parent collections recursively.
+    /// </summary>
     public string? Get(string key, bool recursive)
     {
         ValidateKey(ref key);
@@ -52,6 +79,9 @@ public class Grod
         return null;
     }
 
+    /// <summary>
+    /// Retrieves the numeric value associated with the specified key, optionally searching parent collections recursively.
+    /// </summary>
     public long? GetNumber(string key, bool recursive)
     {
         var value = Get(key, recursive);
@@ -66,6 +96,9 @@ public class Grod
         throw new FormatException($"Value for key '{key}' is not a valid number.");
     }
 
+    /// <summary>
+    /// Retrieves the value associated with the specified key and attempts to convert it to a Boolean value.
+    /// </summary>
     public bool? GetBool(string key, bool recursive)
     {
         var value = Get(key, recursive);
@@ -88,6 +121,9 @@ public class Grod
         throw new FormatException($"Value for key '{key}' is not a valid boolean.");
     }
 
+    /// <summary>
+    /// Adds a new entry or updates the value associated with the specified key.
+    /// </summary>
     public void Set(string key, string? value)
     {
         ValidateKey(ref key);
@@ -101,22 +137,35 @@ public class Grod
         }
     }
 
+    /// <summary>
+    /// Sets the value associated with the specified key, storing the value as a 64-bit integer.
+    /// </summary>
     public void Set(string key, long value)
     {
         Set(key, value.ToString());
     }
 
+    /// <summary>
+    /// Sets the value associated with the specified key to the given Boolean value.
+    /// </summary>
     public void Set(string key, bool value)
     {
         Set(key, value ? TRUE : FALSE);
     }
 
+    /// <summary>
+    /// Sets the value associated with the specified item key in the collection.
+    /// </summary>
     public void Set(GrodItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
         Set(item.Key, item.Value);
     }
 
+    /// <summary>
+    /// Removes the entry with the specified key from the current collection. Optionally removes the entry from parent
+    /// collections if recursive removal is requested.
+    /// </summary>
     public void Remove(string key, bool recursive)
     {
         ValidateKey(ref key);
@@ -127,6 +176,9 @@ public class Grod
         }
     }
 
+    /// <summary>
+    /// Removes all items from the current collection, and optionally clears items from parent collections recursively.
+    /// </summary>
     public void Clear(bool recursive)
     {
         _data.Clear();
@@ -136,6 +188,10 @@ public class Grod
         }
     }
 
+    /// <summary>
+    /// Determines whether the collection contains the specified key, optionally searching parent collections
+    /// recursively.
+    /// </summary>
     public bool ContainsKey(string key, bool recursive)
     {
         ValidateKey(ref key);
@@ -150,6 +206,9 @@ public class Grod
         return false;
     }
 
+    /// <summary>
+    /// Retrieves a list of all keys in the collection, optionally including keys from parent collections recursively and optionally sorted.
+    /// </summary>
     public List<string> Keys(bool recursive, bool sorted)
     {
         var keys = new List<string>(_data.Keys);
@@ -165,6 +224,9 @@ public class Grod
         return keys;
     }
 
+    /// <summary>
+    /// Retrieves a list of keys that begin with the specified prefix.
+    /// </summary>
     public List<string> Keys(string prefix, bool recursive, bool sorted)
     {
         var keys = new List<string>(_data.Keys)
@@ -184,6 +246,9 @@ public class Grod
         return keys;
     }
 
+    /// <summary>
+    /// Returns a list of all items in the collection, with options to include nested items and to sort the results.
+    /// </summary>
     public List<GrodItem> Items(bool recursive, bool sorted)
     {
         var keys = Keys(recursive, sorted);
@@ -196,6 +261,9 @@ public class Grod
         return items;
     }
 
+    /// <summary>
+    /// Retrieves a list of items whose keys match the specified prefix, with options for recursion and sorting.
+    /// </summary>
     public List<GrodItem> Items(string prefix, bool recursive, bool sorted)
     {
         var keys = Keys(prefix, recursive, sorted);
@@ -208,6 +276,9 @@ public class Grod
         return items;
     }
 
+    /// <summary>
+    /// Adds the specified collection of items to the current set.
+    /// </summary>
     public void AddItems(IEnumerable<GrodItem> items)
     {
         if (items != null)
@@ -219,8 +290,28 @@ public class Grod
         }
     }
 
+    /// <summary>
+    /// Attempts to determine whether the specified key is valid.
+    /// </summary>
+    public static bool TryValidateKey(string key)
+    {
+        try
+        {
+            ValidateKey(ref key);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     #region private methods
 
+    /// <summary>
+    /// Compares two dot-delimited key strings using a custom ordering that accounts for special wildcard tokens and
+    /// numeric values.
+    /// </summary>
     private static int CompareKeys(string x, string y)
     {
         if (x == null)
@@ -256,13 +347,41 @@ public class Grod
         return 0;
     }
 
+    /// <summary>
+    /// Validates that the specified key is does not contain invalid characters or whitespace.
+    /// </summary>
     private static void ValidateKey(ref string key)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
-            throw new ArgumentException("Key cannot be null or whitespace.", nameof(key));
+            throw new ArgumentException("Key cannot be null or empty.", nameof(key));
         }
         key = key.Trim();
+        var isScriptKey = key[0] == '@';
+        for (int i = 0; i < key.Length; i++)
+        {
+            var c = key[i];
+            if (char.IsControl(c))
+            {
+                throw new ArgumentException("Key cannot contain control characters.", nameof(key));
+            }
+            if (char.IsWhiteSpace(c))
+            {
+                throw new ArgumentException("Key cannot contain whitespace characters.", nameof(key));
+            }
+            if (c == '$' || c == '"')
+            {
+                throw new ArgumentException($"Key cannot contain punctuation characters: {c}", nameof(key));
+            }
+            if (!isScriptKey && (c == '(' || c == ')' || c == ','))
+            {
+                throw new ArgumentException($"Key cannot contain punctuation characters: {c}", nameof(key));
+            }
+            if (i != 0 && c == '@')
+            {
+                throw new ArgumentException("Key cannot contain the '@' character except at the start.", nameof(key));
+            }
+        }
     }
 
     #endregion

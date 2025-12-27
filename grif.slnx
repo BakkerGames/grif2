@@ -20,5 +20,6 @@
     <File Path="TicTacToe/TicTacToe.grif" />
   </Folder>
   <Project Path="grif/grif.csproj" />
+  <Project Path="griflib/griflib.csproj" Id="e44bd203-07c8-4ece-86de-6dee1d08defb" />
   <Project Path="Tests/Tests.csproj" />
 </Solution>

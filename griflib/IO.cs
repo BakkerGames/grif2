@@ -1,11 +1,17 @@
 ﻿using System.Text;
-using static Grif.Common;
-using static Grif.Dags;
+using static GrifLib.Common;
+using static GrifLib.Dags;
 
-namespace Grif;
+namespace GrifLib;
 
+/// <summary>
+/// Handles input/output operations for GRIF files.
+/// </summary>
 public static class IO
 {
+    /// <summary>
+    /// Byte representation of a CR/LF newline.
+    /// </summary>
     private static readonly byte[] NL_BYTES = [13, 10];
 
     /// <summary>
@@ -23,6 +29,9 @@ public static class IO
         return result;
     }
 
+    /// <summary>
+    /// Opens a GRIF file, stack, or directory and returns the corresponding Grod object(s).
+    /// </summary>
     public static Grod? OpenFile(string filename)
     {
         if (string.IsNullOrWhiteSpace(filename))
@@ -66,12 +75,18 @@ public static class IO
         }
     }
 
+    /// <summary>
+    /// Reads a GRIF file and returns a list of GrodItems.
+    /// </summary>
     public static List<GrodItem> ReadGrif(string filePath)
     {
         using var reader = new StreamReader(filePath);
         return ReadGrif(reader);
     }
 
+    /// <summary>
+    /// Reads a GRIF file from a StreamReader and returns a list of GrodItems.
+    /// </summary>
     public static List<GrodItem> ReadGrif(StreamReader stream)
     {
         List<GrodItem> items = [];
@@ -118,6 +133,9 @@ public static class IO
         return items;
     }
 
+    /// <summary>
+    /// Writes a list of GrodItems to a GRIF file.
+    /// </summary>
     public static void WriteGrif(string filePath, List<GrodItem> items, bool jsonFormat)
     {
         using var stream = GetGrifStream(filePath, items, jsonFormat);
@@ -126,6 +144,9 @@ public static class IO
         stream.CopyTo(fileStream);
     }
 
+    /// <summary>
+    /// Gets a Stream containing the GRIF representation of the provided GrodItems.
+    /// </summary>
     public static Stream GetGrifStream(string filePath, List<GrodItem> items, bool jsonFormat)
     {
         var writer = new MemoryStream();
@@ -214,6 +235,9 @@ public static class IO
 
     #region Private
 
+    /// <summary>
+    /// Opens a GRIF stack file and returns the corresponding Grod object(s).
+    /// </summary>
     private static Grod? OpenGrifStack(string filename)
     {
         Grod? baseGrod = null;
@@ -247,6 +271,9 @@ public static class IO
         return baseGrod;
     }
 
+    /// <summary>
+    /// Opens a GRIF file and returns the corresponding Grod object.
+    /// </summary>
     private static Grod OpenGrifFile(string filename)
     {
         if (string.IsNullOrWhiteSpace(filename))
@@ -266,6 +293,9 @@ public static class IO
         return grod;
     }
 
+    /// <summary>
+    /// Encodes a string for JSON output, escaping special characters as needed.
+    /// </summary>
     private static string EncodeString(string value)
     {
         StringBuilder result = new();
@@ -309,6 +339,9 @@ public static class IO
         return result.ToString();
     }
 
+    /// <summary>
+    /// Gets a JSON string value from the content starting at the given index.
+    /// </summary>
     private static string GetJsonString(string content, ref int index)
     {
         if (index >= content.Length || content[index] != '\"')
@@ -399,6 +432,9 @@ public static class IO
         throw new FormatException("Unterminated string in JSON object.");
     }
 
+    /// <summary>
+    /// Generates a header comment for the GRIF file.
+    /// </summary>
     private static string HeaderComment(string path, bool jsonFormat)
     {
         StringBuilder result = new();
@@ -410,6 +446,9 @@ public static class IO
         return result.ToString();
     }
 
+    /// <summary>
+    /// Parses a key-value pair from GRIF format content starting at the given index.
+    /// </summary>
     private static (string key, string value) ParseGrifKeyValue(string content, ref int index)
     {
         var needSpace = false;
@@ -460,6 +499,9 @@ public static class IO
         return (key.ToString(), valueTemp);
     }
 
+    /// <summary>
+    /// Parses a key-value pair from JSON format content starting at the given index.
+    /// </summary>
     private static (string key, string value) ParseJsonKeyValue(string content, ref int index)
     {
         SkipWhitespace(content, ref index);

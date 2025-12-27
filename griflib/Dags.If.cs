@@ -1,11 +1,17 @@
-﻿using static Grif.Common;
+﻿using static GrifLib.Common;
 
-namespace Grif;
+namespace GrifLib;
 
 public partial class Dags
 {
+    /// <summary>
+    /// Error message for invalid @if syntax.
+    /// </summary>
     private const string _invalidIfSyntax = $"Invalid {IF_TOKEN} syntax";
 
+    /// <summary>
+    /// Process an @if ... @then ... [@else if ... @then ...] [@else ...] @endif block.
+    /// </summary>
     private static List<GrifMessage> ProcessIf(string[] tokens, ref int index, Grod grod)
     {
         // conditions
@@ -99,6 +105,9 @@ public partial class Dags
         throw new SystemException(_invalidIfSyntax);
     }
 
+    /// <summary>
+    /// Skip over tokens until the matching @endif is found.
+    /// </summary>
     private static void SkipOverEndif(string[] tokens, ref int index)
     {
         while (index < tokens.Length)
@@ -116,6 +125,9 @@ public partial class Dags
         throw new SystemException($"Missing {ENDIF_TOKEN}");
     }
 
+    /// <summary>
+    /// Skip over tokens until the matching @then is found.
+    /// </summary>
     private static void SkipOverThen(string[] tokens, ref int index)
     {
         while (index < tokens.Length)
@@ -129,6 +141,9 @@ public partial class Dags
         throw new SystemException($"Missing {THEN_TOKEN}");
     }
 
+    /// <summary>
+    /// Skip to the next @else, @elseif, or @endif token.
+    /// </summary>
     private static void SkipToElseEndif(string[] tokens, ref int index)
     {
         while (index < tokens.Length)
@@ -147,6 +162,9 @@ public partial class Dags
         throw new SystemException(_invalidIfSyntax);
     }
 
+    /// <summary>
+    /// Get the condition for an if statement.
+    /// </summary>
     private static bool GetCondition(string[] tokens, ref int index, Grod grod)
     {
         var answer = ProcessOneCommand(tokens, ref index, grod);

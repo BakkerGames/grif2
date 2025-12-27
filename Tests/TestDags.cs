@@ -1,6 +1,6 @@
-﻿using Grif;
-using static Grif.Common;
-using static Grif.Dags;
+﻿using GrifLib;
+using static GrifLib.Common;
+using static GrifLib.Dags;
 
 namespace Tests;
 

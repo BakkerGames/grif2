@@ -1,10 +1,13 @@
 ﻿using System.Text;
-using static Grif.Common;
+using static GrifLib.Common;
 
-namespace Grif;
+namespace GrifLib;
 
 public partial class Dags
 {
+    /// <summary>
+    /// Process one command from the token list.
+    /// </summary>
     private static List<GrifMessage> ProcessOneCommand(string[] tokens, ref int index, Grod grod)
     {
         List<GrifMessage> result = [];
