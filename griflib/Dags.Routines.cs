@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using static Grif.Common;
+using static GrifLib.Common;
 
-namespace Grif;
+namespace GrifLib;
 
 public partial class Dags
 {
@@ -512,6 +512,9 @@ public partial class Dags
 
     #region Private routines
 
+    /// <summary>
+    /// Get parameters from tokens starting at the specified index.
+    /// </summary>
     private static List<GrifMessage> GetParameters(string[] tokens, ref int index, Grod grod)
     {
         List<GrifMessage> parameters = [];
@@ -549,6 +552,9 @@ public partial class Dags
         return parameters;
     }
 
+    /// <summary>
+    /// Trim surrounding quotes from a string value.
+    /// </summary>
     private static string TrimQuotes(string value)
     {
         if (value.Length >= 2 && value.StartsWith('"') && value.EndsWith('"'))
@@ -559,6 +565,9 @@ public partial class Dags
         return value;
     }
 
+    /// <summary>
+    /// Check that the parameter count matches the expected count.
+    /// </summary>
     private static void CheckParameterCount(List<GrifMessage> p, long count)
     {
         if (p.Count != count)
@@ -567,6 +576,9 @@ public partial class Dags
         }
     }
 
+    /// <summary>
+    /// Check that there is at least one parameter.
+    /// </summary>
     private static void CheckParameterAtLeastOne(List<GrifMessage> p)
     {
         if (p.Count == 0)
@@ -575,6 +587,9 @@ public partial class Dags
         }
     }
 
+    /// <summary>
+    /// Check that the parameter count is between min and max.
+    /// </summary>
     private static void CheckParmeterCountBetween(List<GrifMessage> p, long min, long max)
     {
         if (p.Count < min || p.Count > max)
@@ -583,6 +598,9 @@ public partial class Dags
         }
     }
 
+    /// <summary>
+    /// Get the string value from a Grod, processing scripts as needed.
+    /// </summary>
     private static string GetValue(Grod grod, string? value)
     {
         if (IsNull(value))
@@ -602,6 +620,9 @@ public partial class Dags
         throw new SystemException("Expected a single text result.");
     }
 
+    /// <summary>
+    /// Get user-defined function values.
+    /// </summary>
     private static List<GrifMessage> GetUserDefinedFunctionValues(string token, List<GrifMessage> p, Grod grod)
     {
         var keys = grod.Keys(token, true, true);
@@ -634,11 +655,17 @@ public partial class Dags
         return userResult;
     }
 
+    /// <summary>
+    /// Return "true" or "false" string based on the boolean value.
+    /// </summary>
     private static string TrueFalse(bool value)
     {
         return value ? TRUE : FALSE;
     }
 
+    /// <summary>
+    /// Evaluate a string as a boolean value.
+    /// </summary>
     private static bool IsTrue(string? value)
     {
         if (value == null)
@@ -653,6 +680,9 @@ public partial class Dags
         };
     }
 
+    /// <summary>
+    /// Add an item to a comma-delimited list in the Grod.
+    /// </summary>
     private static void AddListItem(Grod grod, string key, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
@@ -671,6 +701,9 @@ public partial class Dags
         }
     }
 
+    /// <summary>
+    /// Clear all items in an array stored in the Grod.
+    /// </summary>
     private static void ClearArray(Grod grod, string key)
     {
         if (string.IsNullOrWhiteSpace(key))
@@ -684,6 +717,9 @@ public partial class Dags
         }
     }
 
+    /// <summary>
+    /// Fix a list item for storage by replacing commas and handling nulls.
+    /// </summary>
     private static string FixListItemIn(string? value)
     {
         if (string.IsNullOrEmpty(value))
@@ -693,6 +729,9 @@ public partial class Dags
         return value;
     }
 
+    /// <summary>
+    /// Fix a list item for output by restoring commas and handling nulls.
+    /// </summary>
     private static string? FixListItemOut(string value)
     {
         if (value == NULL)
@@ -702,6 +741,9 @@ public partial class Dags
         return value;
     }
 
+    /// <summary>
+    /// Get an item from a 2D array stored in the Grod.
+    /// </summary>
     private static string? GetArrayItem(Grod grod, string key, long y, long x)
     {
         if (string.IsNullOrWhiteSpace(key))
@@ -716,6 +758,9 @@ public partial class Dags
         return GetListItem(grod, itemKey, x);
     }
 
+    /// <summary>
+    /// Set an item in a 2D array stored in the Grod.
+    /// </summary>
     private static void SetArrayItem(Grod grod, string key, long y, long x, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
@@ -730,6 +775,9 @@ public partial class Dags
         SetListItem(grod, itemKey, x, value);
     }
 
+    /// <summary>
+    /// Get an item from a comma-delimited list in the Grod.
+    /// </summary>
     private static string? GetListItem(Grod grod, string key, long x)
     {
         if (string.IsNullOrWhiteSpace(key))
@@ -753,6 +801,9 @@ public partial class Dags
         return items[x];
     }
 
+    /// <summary>
+    /// Set an item in a comma-delimited list in the Grod.
+    /// </summary>
     private static void SetListItem(Grod grod, string key, long x, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
@@ -777,6 +828,9 @@ public partial class Dags
         grod.Set(key, string.Join(',', items));
     }
 
+    /// <summary>
+    /// Insert an item at a specific index in a comma-delimited list in the Grod.
+    /// </summary>
     private static void InsertAtListItem(Grod grod, string key, long x, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
@@ -801,6 +855,9 @@ public partial class Dags
         grod.Set(key, string.Join(',', items));
     }
 
+    /// <summary>
+    /// Remove an item at a specific index in a comma-delimited list in the Grod.
+    /// </summary>
     private static void RemoveAtListItem(Grod grod, string key, long x)
     {
         if (string.IsNullOrWhiteSpace(key))

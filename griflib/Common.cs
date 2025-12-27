@@ -1,26 +1,32 @@
-﻿namespace Grif;
+﻿namespace GrifLib;
 
 public static partial class Common
 {
+    /// <summary>
+    /// String comparison: OrdinalIgnoreCase
+    /// </summary>
     public static readonly StringComparison OIC = StringComparison.OrdinalIgnoreCase;
 
+    // Basic constants
     public const string NULL = "null";
     public const string TRUE = "true";
     public const string FALSE = "false";
 
+    // Special characters
     public const char SCRIPT_CHAR = '@';
-
     public const string NL_CHAR = "\\n";
     public const string TAB_CHAR = "\\t";
     public const string SPACE_CHAR = "\\s";
     public const string COMMA_CHAR = "\\u002c";
 
+    // File and application constants
     public const string APP_NAME = "GRIF";
     public const string DATA_EXTENSION = ".grif";
     public const string SAVE_FILENAME = "save";
     public const string SAVE_EXTENSION = ".grifsave";
     public const string STACK_EXTENSION = ".grifstack";
 
+    // System variable keys
     public const string AFTER_PROMPT = "system.after_prompt";
     public const string ARTICLE_KEY = "system.articles";
     public const string DONT_UNDERSTAND = "system.dont_understand";
@@ -35,8 +41,10 @@ public static partial class Common
     public const string WORDSIZE = "system.wordsize";
     public const string VERSION = "system.version";
 
+    // Inchannel message prefix
     public const string INCHANNEL = "#INCHANNEL;";
 
+    // Outchannel message prefixes
     public const string OUTCHANNEL_ASK = "#ASK;";
     public const string OUTCHANNEL_ENTER = "#ENTER;";
     public const string OUTCHANNEL_EXISTS_SAVE = "#EXISTS;";
@@ -48,6 +56,7 @@ public static partial class Common
     public const string OUTCHANNEL_SAVE = "#SAVE;";
     public const string OUTCHANNEL_SAVE_NAME = "#SAVENAME;";
 
+    // Prefixes for word types
     public const string ADJECTIVE_PREFIX = "adjective.";
     public const string BACKGROUND_PREFIX = "background.";
     public const string COMMAND_PREFIX = "command.";

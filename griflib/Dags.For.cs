@@ -1,10 +1,13 @@
 ﻿using System.Text;
-using static Grif.Common;
+using static GrifLib.Common;
 
-namespace Grif;
+namespace GrifLib;
 
 public partial class Dags
 {
+    /// <summary>
+    /// Handle @for...@endfor
+    /// </summary>
     private static void HandleFor(List<GrifMessage> p, string[] tokens, ref int index, Grod grod, List<GrifMessage> result)
     {
         // @for(i,<start>,<end inclusive>)=...$i...@endfor
@@ -55,6 +58,9 @@ public partial class Dags
         }
     }
 
+    /// <summary>
+    /// Handle @foreachkey...@endforeachkey
+    /// </summary>
     private static void HandleForEachKey(List<GrifMessage> p, string[] tokens, ref int index, Grod grod, List<GrifMessage> result)
     {
         // @foreachkey(i,prefix,[suffix])=...$i...@endforeachkey
@@ -96,6 +102,9 @@ public partial class Dags
         }
     }
 
+    /// <summary>
+    /// Handle @foreachlist...@endforeachlist
+    /// </summary>
     private static void HandleForEachList(List<GrifMessage> p, string[] tokens, ref int index, Grod grod, List<GrifMessage> result)
     {
         // @foreachlist(x,listname)=...$x...@endforeachlist

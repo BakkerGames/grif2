@@ -1,10 +1,13 @@
 ﻿using System.Text;
-using static Grif.Common;
+using GrifLib;
+using static GrifLib.Common;
 
 namespace Grif;
 
 internal class Program
 {
+    #region Private Constants
+
     private const string OUTCHANNEL_SLEEP = "#SLEEP;";
 
     private static readonly Queue<string> inputQueue = new();
@@ -16,6 +19,8 @@ internal class Program
     private static string? inputFilename;
     private static string? splitInput;
     private static string? outputFilename;
+
+    #endregion
 
     internal static async Task Main(string[] args)
     {
@@ -88,6 +93,9 @@ internal class Program
 
     #region Private Methods
 
+    /// <summary>
+    /// Output syntax information.
+    /// </summary>
     private static string Syntax()
     {
         StringBuilder result = new();
@@ -106,6 +114,9 @@ internal class Program
         return result.ToString();
     }
 
+    /// <summary>
+    /// Parse command line parameters.
+    /// </summary>
     private static int ParseParameters(string[] args, ref Grod baseGrod)
     {
         if (args.Length == 0)
@@ -238,6 +249,9 @@ internal class Program
         return 0;
     }
 
+    /// <summary>
+    /// Handle input event.
+    /// </summary>
     private static void Input(object sender)
     {
         OutputText(((IFGame)sender).Prompt() ?? "");
@@ -264,6 +278,9 @@ internal class Program
         }
     }
 
+    /// <summary>
+    /// Handle output event.
+    /// </summary>
     private static void Output(object sender, GrifMessage e)
     {
         if (e.Type == MessageType.Text)
@@ -290,6 +307,9 @@ internal class Program
         }
     }
 
+    /// <summary>
+    /// Output text with word wrapping and special character handling.
+    /// </summary>
     private static void OutputText(string text)
     {
         if (text.Contains("\\s"))
@@ -324,6 +344,9 @@ internal class Program
         }
     }
 
+    /// <summary>
+    /// Wordwrap text according to maxOutputWidth.
+    /// </summary>
     private static List<string> Wordwrap(string text)
     {
         if (maxOutputWidth <= 0 || string.IsNullOrEmpty(text))
@@ -357,6 +380,9 @@ internal class Program
         return result;
     }
 
+    /// <summary>
+    /// Output text to log file if specified.
+    /// </summary>
     private static void OutputTextLog(string text)
     {
         if (outputFilename == null)

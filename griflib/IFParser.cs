@@ -1,7 +1,7 @@
-﻿using static Grif.Common;
-using static Grif.Dags;
+﻿using static GrifLib.Common;
+using static GrifLib.Dags;
 
-namespace Grif;
+namespace GrifLib;
 
 /*
 Can handle the following input patterns:
@@ -33,6 +33,9 @@ internal class ParserItem(string key, string[] values)
     public string[] Values { get; } = values;
 }
 
+/// <summary>
+/// Provides functionality to parse user input commands in an interactive fiction game.
+/// </summary>
 public static class IFParser
 {
     private static long _maxWordLen = 0;
@@ -43,8 +46,11 @@ public static class IFParser
     private static List<ParserItem> _directions = [];
     private static List<ParserItem> _prepositions = [];
     private static List<ParserItem> _adjectives = [];
-    private static List<ParserItem> _articles = []; // "the,a,an,some,any,my,his,her,its,our,their"
+    private static List<ParserItem> _articles = []; // "a,an,the,..."
 
+    /// <summary>
+    /// Initializes parser data structures using values from the specified Grod instance.
+    /// </summary>
     public static void ParseInit(Grod grod)
     {
         _verbs = [.. grod.Items(VERB_PREFIX, true, true)
@@ -82,6 +88,9 @@ public static class IFParser
             $"I don't understand \"{{0}}\".") + NL_CHAR;
     }
 
+    /// <summary>
+    /// Parses a user input string and generates a list of messages representing the interpreted command and its components.
+    /// </summary>
     public static List<GrifMessage>? ParseInput(Grod grod, string input)
     {
         var result = new List<GrifMessage>();
@@ -244,6 +253,9 @@ public static class IFParser
 
     #region Private methods
 
+    /// <summary>
+    /// Trims synonyms in the provided list of ParserItem objects to the maximum word length.
+    /// </summary>
     private static void TrimSynonyms(ref List<ParserItem> items)
     {
         for (int i = 0; i < items.Count; i++)
@@ -260,6 +272,9 @@ public static class IFParser
         }
     }
 
+    /// <summary>
+    /// Gets the first matching word from the provided vocabulary list and removes it from the words list.
+    /// </summary>
     private static (string?, string?) GetMatchingWord(List<ParserItem> vocabList, ref List<string> words)
     {
         for (int i = 0; i < words.Count; i++)
@@ -286,6 +301,9 @@ public static class IFParser
         return (null, null);
     }
 
+    /// <summary>
+    /// Gets the first matching word from the provided vocabulary list and removes it from the start of the words list.
+    /// </summary>
     private static (string?, string?) GetMatchingFirstWord(List<ParserItem> vocabList, ref List<string> words)
     {
         if (words.Count == 0)
@@ -313,6 +331,9 @@ public static class IFParser
         return (null, null);
     }
 
+    /// <summary>
+    /// Gets a noun from the provided noun list, along with any associated adjectives, and removes them from the words list.
+    /// </summary>
     private static (string?, string?, string?) GetNoun(List<ParserItem> nounList, ref List<string> words)
     {
         // remove articles such as "the", "a", "an"
@@ -387,6 +408,9 @@ public static class IFParser
         return (null, null, null);
     }
 
+    /// <summary>
+    /// Removes articles from the start of the words list.
+    /// </summary>
     private static void RemoveArticles(List<ParserItem> articles, ref List<string> words)
     {
         if (words.Count == 0)

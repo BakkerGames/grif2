@@ -1,4 +1,4 @@
-using Grif;
+using GrifLib;
 
 namespace Tests;
 

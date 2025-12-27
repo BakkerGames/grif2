@@ -1,4 +1,4 @@
-﻿using Grif;
+﻿using GrifLib;
 
 namespace Tests;
 
@@ -24,7 +24,7 @@ public class TestGrod
     {
         var parentGrod = new Grod("parent");
         parentGrod.Set("key2", "value2");
-        var childGrod = new Grif.Grod("child", parentGrod);
+        var childGrod = new Grod("child", parentGrod);
         Assert.That(childGrod.Get("key2", true), Is.EqualTo("value2"));
     }
 
@@ -61,7 +61,7 @@ public class TestGrod
         var parentGrod = new Grod("parent2");
         parentGrod.Set("key7", "value7");
         parentGrod.Set("key8", "value8");
-        var childGrod = new Grif.Grod("child2", parentGrod);
+        var childGrod = new Grod("child2", parentGrod);
         childGrod.Set("key8", "value8duplicate");
         childGrod.Set("key9", "value9");
         Assert.That(childGrod.Count(true), Is.EqualTo(3));
