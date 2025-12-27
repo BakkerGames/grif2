@@ -303,6 +303,14 @@ public partial class Dags
                     addSpace = true;
                 }
             }
+            else if (lastChar == '(')
+            {
+                addSpace = false;
+            }
+            else if (s == ")" || s == ",")
+            {
+                addSpace = false;
+            }
             else
             {
                 addSpace = true;

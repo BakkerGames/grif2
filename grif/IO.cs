@@ -6,6 +6,8 @@ namespace Grif;
 
 public static class IO
 {
+    private static readonly byte[] NL_BYTES = [13, 10];
+
     /// <summary>
     /// Returns the full path to a save directory within the user's Documents folder.
     /// </summary>
@@ -132,7 +134,8 @@ public static class IO
         writer.Write(Encoding.UTF8.GetBytes(HeaderComment(filePath, jsonFormat)));
         if (jsonFormat)
         {
-            writer.Write(Encoding.UTF8.GetBytes("{\r\n"));
+            writer.Write(Encoding.UTF8.GetBytes("{"));
+            writer.Write(NL_BYTES);
         }
         foreach (var item in items)
         {
@@ -140,7 +143,8 @@ public static class IO
             {
                 if (needsComma)
                 {
-                    writer.Write(Encoding.UTF8.GetBytes(",\r\n"));
+                    writer.Write(Encoding.UTF8.GetBytes(","));
+                    writer.Write(NL_BYTES);
                 }
                 writer.Write(Encoding.UTF8.GetBytes("\t\""));
                 writer.Write(Encoding.UTF8.GetBytes(EncodeString(item.Key)));
@@ -149,7 +153,7 @@ public static class IO
             else
             {
                 writer.Write(Encoding.UTF8.GetBytes(EncodeString(item.Key)));
-                writer.Write(Encoding.UTF8.GetBytes(EncodeString("\r\n")));
+                writer.Write(NL_BYTES);
             }
             if (IsScript(item.Value))
             {
@@ -165,7 +169,7 @@ public static class IO
                 else
                 {
                     writer.Write(Encoding.UTF8.GetBytes(PrettyScript(item.Value, true)));
-                    writer.Write(Encoding.UTF8.GetBytes(EncodeString("\r\n")));
+                    writer.Write(NL_BYTES);
                 }
             }
             else
@@ -194,14 +198,16 @@ public static class IO
                         {
                             value = value[..^1] + SPACE_CHAR;
                         }
-                        writer.Write(Encoding.UTF8.GetBytes($"\t{value}\r\n"));
+                        writer.Write(Encoding.UTF8.GetBytes($"\t{value}"));
+                        writer.Write(NL_BYTES);
                     }
                 }
             }
         }
         if (jsonFormat)
         {
-            writer.Write(Encoding.UTF8.GetBytes("\r\n}"));
+            writer.Write(NL_BYTES);
+            writer.Write(Encoding.UTF8.GetBytes("}"));
         }
         return writer;
     }
