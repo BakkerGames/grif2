@@ -6,10 +6,19 @@
     <Nullable>enable</Nullable>
     <Version>2.2025.1227</Version>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\"/>
+    <None Include="LICENSE.txt" Pack="true" PackagePath=""/>
   </ItemGroup>
+
+  <Target Name="CopyPackage" AfterTargets="Pack">
+    <Copy
+        SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg"
+        DestinationFolder="..\publish\NuGet"
+    />
+  </Target>
 
 </Project>

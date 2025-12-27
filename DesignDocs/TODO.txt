@@ -5,3 +5,4 @@ __config values
 * system.uppercase
 example game with adjectives, red ball/blue ball/small box/large box
 DAGS example scripts for various useful concepts
+Command-line parameter for pausing at end of game.
