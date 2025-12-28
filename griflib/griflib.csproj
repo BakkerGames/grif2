@@ -25,6 +25,7 @@
 
   <Target Name="CopyPackage" AfterTargets="Pack">
     <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\publish\NuGet" />
+    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\..\..\..\EXE\NuGet" />
   </Target>
 
 </Project>
