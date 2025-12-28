@@ -33,6 +33,10 @@
       "commandName": "Project",
       "commandLineArgs": "\"..\\AdventureToGRIF\\GRIFOutput\\adventure.grifstack\"",
       "workingDirectory": ".."
+    },
+    "AoC": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\sbakk\\source\\repos\\aoc2025\\03\\03_1.grif\" -i \"C:\\Users\\sbakk\\source\\repos\\aoc2025\\03\\03_test.txt\""
     }
   }
 }

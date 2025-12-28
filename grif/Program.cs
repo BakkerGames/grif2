@@ -16,7 +16,7 @@ internal class Program
     private static int maxOutputWidth = 0;
     private static bool uppercaseInput = false;
 
-    private static string? inputFilename;
+    private static List<string> inputFilenames = [];
     private static string? splitInput;
     private static string? outputFilename;
 
@@ -46,10 +46,12 @@ internal class Program
             return;
         }
         game.Initialize(baseGrod, gameName, null);
-        if (inputFilename != null)
+        string inputFilename = "";
+        try
         {
-            try
+            foreach (var filename in inputFilenames)
             {
+                inputFilename = filename;
                 var inStream = File.ReadAllLines(inputFilename);
                 foreach (var line in inStream)
                 {
@@ -75,11 +77,11 @@ internal class Program
                     }
                 }
             }
-            catch (Exception)
-            {
-                OutputText($"Error opening input file: {inputFilename}");
-                return;
-            }
+        }
+        catch (Exception)
+        {
+            OutputText($"Error opening input file: {inputFilename}");
+            return;
         }
         // get settings
         maxOutputWidth = (int)(baseGrod.GetNumber(OUTPUT_WIDTH, true) ?? 0);
@@ -101,7 +103,7 @@ internal class Program
         StringBuilder result = new();
         result.AppendLine("GRIF - Game Runner for Interactive Fiction");
         result.AppendLine();
-        result.AppendLine($"Version {IFGame.Version}");
+        result.AppendLine($"Version {Common.Version}");
         result.AppendLine();
         result.AppendLine("grif <filename.grif | filename.grifstack | directory>");
         result.AppendLine("     [-h  | --help | -?]");
@@ -133,7 +135,7 @@ internal class Program
                 {
                     if (index + 1 >= args.Length)
                     {
-                        OutputText($"Argument must have a value: {args[index]}");
+                        OutputText($"Argument must have a value: {args[index]}\\n\\n");
                         OutputText(Syntax());
                         return 2;
                     }
@@ -148,13 +150,14 @@ internal class Program
                         args[index].Equals("--input", OIC))
                     {
                         index++;
-                        inputFilename = args[index++];
+                        var inputFilename = args[index++];
                         if (!File.Exists(inputFilename))
                         {
-                            OutputText($"Input file not found: {inputFilename}");
+                            OutputText($"Input file not found: {inputFilename}\\n\\n");
                             OutputText(Syntax());
                             return 2;
                         }
+                        inputFilenames.Add(inputFilename);
                     }
                     else if (args[index].Equals("-si", OIC) ||
                         args[index].Equals("--split-input", OIC))
@@ -181,7 +184,7 @@ internal class Program
                         }
                         catch (Exception)
                         {
-                            OutputText($"Error creating output file: {tempFilename}");
+                            OutputText($"Error creating output file: {tempFilename}\\n\\n");
                             OutputText(Syntax());
                             return 2;
                         }
@@ -194,7 +197,7 @@ internal class Program
                         var grod = IO.OpenFile(modFilename); // to check if valid
                         if (grod == null)
                         {
-                            OutputText($"Error opening mod file: {modFilename}");
+                            OutputText($"Error opening mod file: {modFilename}\\n\\n");
                             OutputText(Syntax());
                             return 2;
                         }
@@ -210,7 +213,7 @@ internal class Program
                     }
                     else
                     {
-                        OutputText($"Unknown argument: {args[index++]}");
+                        OutputText($"Unknown argument: {args[index++]}\\n\\n");
                         OutputText(Syntax());
                         return 2;
                     }
@@ -221,7 +224,7 @@ internal class Program
                     var grod = IO.OpenFile(filename);
                     if (grod == null)
                     {
-                        OutputText($"Error opening file: {filename}");
+                        OutputText($"Error opening file: {filename}\\n\\n");
                         OutputText(Syntax());
                         return 2;
                     }
@@ -239,7 +242,7 @@ internal class Program
         }
         catch (Exception ex)
         {
-            OutputText($"Error processing parameters: {ex.Message}");
+            OutputText($"Error processing parameters: {ex.Message}\\n\\n");
         }
         if (baseGrod == null || baseGrod.Count(false) == 0)
         {

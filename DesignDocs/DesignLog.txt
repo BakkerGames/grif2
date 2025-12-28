@@ -295,3 +295,6 @@
 - Added more validation to GROD keys. Added TryValidateKey().
 - Split into GrifLib project for GROD, DAGS, and IFGame classes.
 - Grif project now only has Program.cs to run the game.
+- Parse a single number as input value.
+- Moved Version to GrifLib.Common.
+- Allow multple input files on command line.

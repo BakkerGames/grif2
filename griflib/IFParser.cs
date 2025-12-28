@@ -111,7 +111,7 @@ public static class IFParser
         {
             return null;
         }
-        var words = input.Replace(","," ").Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        var words = input.Replace(",", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries)
             .ToList();
         if (words.Count == 0)
         {
@@ -142,10 +142,16 @@ public static class IFParser
         }
         if (verb == null && direction == null)
         {
-            if (words.Count > 0)
+            if (words.Count > 0 || noun != null)
             {
                 verb = "?"; // any verb
                 extraText = string.Join(' ', words);
+                if (noun != null)
+                {
+                    extraText = $"{nounWord} {extraText}".Trim();
+                    noun = null;
+                    nounWord = null;
+                }
                 words.Clear();
             }
             else
