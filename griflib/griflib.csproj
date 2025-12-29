@@ -4,10 +4,13 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>2.2025.1227.1</Version>
+    <Authors>Scott Bakker</Authors>
+    <Company>BakkerGames</Company>
+    <Copyright>Copyright 2025 Scott Bakker</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <Authors>Scott Bakker</Authors>
+    <Title>GrifLib - Game Runner for Interactive Fiction Library</Title>
+    <Version>2.2025.1227.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

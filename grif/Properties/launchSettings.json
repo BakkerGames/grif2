@@ -36,7 +36,8 @@
     },
     "AoC": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\Users\\sbakk\\source\\repos\\aoc2025\\03\\03_1.grif\" -i \"C:\\Users\\sbakk\\source\\repos\\aoc2025\\03\\03_test.txt\""
+      "commandLineArgs": "\"..\\aoc2025\\03\\03_1.grif\" -i \"..\\aoc2025\\03\\03_test.txt\" -i \"..\\aoc2025\\03\\end.txt\"",
+      "workingDirectory": ".."
     }
   }
 }

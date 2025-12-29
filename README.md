@@ -23,3 +23,4 @@ GRIF is also a library that can be integrated into other applications to provide
 - Can handle system events such as sleep
 - Can stack multiple GRIF files for modular game design
 - Outchannel support can be customized for different output methods
+- Handles 64-bit integers for larger data values

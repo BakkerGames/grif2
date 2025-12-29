@@ -6,3 +6,5 @@ __config values
 example game with adjectives, red ball/blue ball/small box/large box
 DAGS example scripts for various useful concepts
 Command-line parameter for pausing at end of game.
+@setchar(value,index,char)
+@getchar(value,index)
