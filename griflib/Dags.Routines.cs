@@ -524,7 +524,7 @@ public partial class Dags
     /// <summary>
     /// Get parameters from script.Tokens starting at the specified script.Index.
     /// </summary>
-    private static List<GrifMessage> GetParameters(ScriptObj script, Grod grod)
+    private static List<GrifMessage> GetParameters(Grod grod, ScriptObj script)
     {
         List<GrifMessage> parameters = [];
         while (script.Index < script.Tokens.Length && script.Tokens[script.Index] != ")")
@@ -533,7 +533,7 @@ public partial class Dags
             if (IsScript(token))
             {
                 // Handle nested script.Tokens
-                parameters.AddRange(ProcessOneCommand(script, grod));
+                parameters.AddRange(ProcessOneCommand(grod, script));
             }
             else
             {
@@ -632,7 +632,7 @@ public partial class Dags
     /// <summary>
     /// Get user-defined function values.
     /// </summary>
-    private static List<GrifMessage> GetUserDefinedFunctionValues(string token, List<GrifMessage> p, Grod grod)
+    private static List<GrifMessage> GetUserDefinedFunctionValues(Grod grod, ScriptObj script, string token, List<GrifMessage> p)
     {
         var keys = grod.Keys(token, true, true);
         if (keys.Count == 0)
@@ -653,7 +653,7 @@ public partial class Dags
         {
             throw new SystemException($"Parameter count mismatch for {key}. Expected {placeholders.Length}, got {p.Count}");
         }
-        var value = grod.Get(key, true)
+        var value = GetGlobalOrLocal(grod, script, key, true)
             ?? throw new SystemException($"Key not found: {keys.First()}");
         for (int i = 0; i < placeholders.Length; i++)
         {
@@ -692,28 +692,28 @@ public partial class Dags
     /// <summary>
     /// Add an item to a comma-delimited list in the Grod.
     /// </summary>
-    private static void AddListItem(Grod grod, string key, string? value)
+    private static void AddListItem(Grod grod, ScriptObj script, string key, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
             throw new SystemException("Key cannot be null or empty.");
         }
         value = FixListItemIn(value);
-        var existing = grod.Get(key, true);
+        var existing = GetGlobalOrLocal(grod, script, key, true);
         if (string.IsNullOrEmpty(existing) || IsNull(existing))
         {
-            grod.Set(key, value);
+            SetGlobalOrLocal(grod, script, key, value);
         }
         else
         {
-            grod.Set(key, existing + "," + value);
+            SetGlobalOrLocal(grod, script, key, existing + "," + value);
         }
     }
 
     /// <summary>
     /// Clear all items in an array stored in the Grod.
     /// </summary>
-    private static void ClearArray(Grod grod, string key)
+    private static void ClearArray(Grod grod, ScriptObj script, string key)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -722,7 +722,7 @@ public partial class Dags
         var list = grod.Keys(key + ":", true, true);
         foreach (var item in list)
         {
-            grod.Set(item, null);
+            SetGlobalOrLocal(grod, script, item, null);
         }
     }
 
@@ -753,7 +753,7 @@ public partial class Dags
     /// <summary>
     /// Get an item from a 2D array stored in the Grod.
     /// </summary>
-    private static string? GetArrayItem(Grod grod, string key, long y, long x)
+    private static string? GetArrayItem(Grod grod, ScriptObj script, string key, long y, long x)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -764,13 +764,13 @@ public partial class Dags
             throw new SystemException($"Array indexes cannot be negative: {key}: {y},{x}");
         }
         var itemKey = $"{key}:{y}";
-        return GetListItem(grod, itemKey, x);
+        return GetListItem(grod, script, itemKey, x);
     }
 
     /// <summary>
     /// Set an item in a 2D array stored in the Grod.
     /// </summary>
-    private static void SetArrayItem(Grod grod, string key, long y, long x, string? value)
+    private static void SetArrayItem(Grod grod, ScriptObj script, string key, long y, long x, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -781,13 +781,13 @@ public partial class Dags
             throw new SystemException($"Array indexes cannot be negative: {key}: {y},{x}");
         }
         var itemKey = $"{key}:{y}";
-        SetListItem(grod, itemKey, x, value);
+        SetListItem(grod, script, itemKey, x, value);
     }
 
     /// <summary>
     /// Get an item from a comma-delimited list in the Grod.
     /// </summary>
-    private static string? GetListItem(Grod grod, string key, long x)
+    private static string? GetListItem(Grod grod, ScriptObj script, string key, long x)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -797,7 +797,7 @@ public partial class Dags
         {
             throw new SystemException($"List indexes cannot be negative: {key}: {x}");
         }
-        var list = grod.Get(key, true);
+        var list = GetGlobalOrLocal(grod, script, key, true);
         if (string.IsNullOrWhiteSpace(list) || IsNull(list))
         {
             return null;
@@ -813,7 +813,7 @@ public partial class Dags
     /// <summary>
     /// Set an item in a comma-delimited list in the Grod.
     /// </summary>
-    private static void SetListItem(Grod grod, string key, long x, string? value)
+    private static void SetListItem(Grod grod, ScriptObj script, string key, long x, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -823,7 +823,7 @@ public partial class Dags
         {
             throw new SystemException($"List indexes cannot be negative: {key}: {x}");
         }
-        var list = grod.Get(key, true);
+        var list = GetGlobalOrLocal(grod, script, key, true);
         if (string.IsNullOrWhiteSpace(list) || IsNull(list))
         {
             list = NULL;
@@ -834,13 +834,13 @@ public partial class Dags
             items.Add(NULL);
         }
         items[(int)x] = FixListItemIn(value);
-        grod.Set(key, string.Join(',', items));
+        SetGlobalOrLocal(grod, script, key, string.Join(',', items));
     }
 
     /// <summary>
     /// Insert an item at a specific script.Index in a comma-delimited list in the Grod.
     /// </summary>
-    private static void InsertAtListItem(Grod grod, string key, long x, string? value)
+    private static void InsertAtListItem(Grod grod, ScriptObj script, string key, long x, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -850,7 +850,7 @@ public partial class Dags
         {
             throw new SystemException($"List indexes cannot be negative: {key}: {x}");
         }
-        var list = grod.Get(key, true);
+        var list = GetGlobalOrLocal(grod, script, key, true);
         if (string.IsNullOrWhiteSpace(list) || IsNull(list))
         {
             list = NULL;
@@ -861,13 +861,13 @@ public partial class Dags
             items.Add(NULL);
         }
         items.Insert((int)x, FixListItemIn(value));
-        grod.Set(key, string.Join(',', items));
+        SetGlobalOrLocal(grod, script, key, string.Join(',', items));
     }
 
     /// <summary>
     /// Remove an item at a specific script.Index in a comma-delimited list in the Grod.
     /// </summary>
-    private static void RemoveAtListItem(Grod grod, string key, long x)
+    private static void RemoveAtListItem(Grod grod, ScriptObj script, string key, long x)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -877,7 +877,7 @@ public partial class Dags
         {
             throw new SystemException($"List indexes cannot be negative: {key}: {x}");
         }
-        var list = grod.Get(key, true);
+        var list = GetGlobalOrLocal(grod, script, key, true);
         if (string.IsNullOrWhiteSpace(list) || IsNull(list))
         {
             list = NULL;
@@ -888,7 +888,42 @@ public partial class Dags
             return; // Nothing to remove
         }
         items.RemoveAt((int)x);
-        grod.Set(key, string.Join(',', items));
+        SetGlobalOrLocal(grod, script, key, string.Join(',', items));
+    }
+
+    /// <summary>
+    /// Get a value from either the local script Grod or the global Grod.
+    /// </summary>
+    private static string? GetGlobalOrLocal(Grod grod, ScriptObj script, string key, bool recursive)
+    {
+        if (IsLocal(key))
+        {
+            return script.LocalData.Get(key, recursive);
+        }
+        else
+        {
+            return grod.Get(key, recursive);
+        }
+    }
+
+    private static void SetGlobalOrLocal(Grod grod, ScriptObj script, string key, string? value)
+    {
+        if (IsLocal(key))
+        {
+            script.LocalData.Set(key, value);
+        }
+        else
+        {
+            grod.Set(key, value);
+        }
+    }
+
+    /// <summary>
+    /// Get whether the value is a local variable.
+    /// </summary>
+    private static bool IsLocal(string? value)
+    {
+        return value != null && value.StartsWith(LOCAL_CHAR);
     }
 
     #endregion

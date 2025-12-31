@@ -8,7 +8,7 @@ public partial class Dags
     /// <summary>
     /// Handle @for...@endfor
     /// </summary>
-    private static void HandleFor(List<GrifMessage> p, ScriptObj script, Grod grod, List<GrifMessage> result)
+    private static void HandleFor(Grod grod, ScriptObj script, List<GrifMessage> p, List<GrifMessage> result)
     {
         // @for(i,<start>,<end inclusive>)=...$i...@endfor
         var iterator = "$" + p[0].Value;
@@ -52,7 +52,7 @@ public partial class Dags
             };
             do
             {
-                var answer = ProcessOneCommand(loopScript, grod);
+                var answer = ProcessOneCommand(grod, loopScript);
                 if (answer.Count > 0)
                 {
                     result.AddRange(answer);
@@ -64,7 +64,7 @@ public partial class Dags
     /// <summary>
     /// Handle @foreachkey...@endforeachkey
     /// </summary>
-    private static void HandleForEachKey(List<GrifMessage> p, ScriptObj script, Grod grod, List<GrifMessage> result)
+    private static void HandleForEachKey(Grod grod, ScriptObj script, List<GrifMessage> p, List<GrifMessage> result)
     {
         // @foreachkey(i,prefix,[suffix])=...$i...@endforeachkey
         var newTokens = new StringBuilder();
@@ -108,7 +108,7 @@ public partial class Dags
     /// <summary>
     /// Handle @foreachlist...@endforeachlist
     /// </summary>
-    private static void HandleForEachList(List<GrifMessage> p, ScriptObj script, Grod grod, List<GrifMessage> result)
+    private static void HandleForEachList(Grod grod, ScriptObj script, List<GrifMessage> p, List<GrifMessage> result)
     {
         // @foreachlist(x,listname)=...$x...@endforeachlist
         var newTokens = new StringBuilder();
@@ -135,7 +135,7 @@ public partial class Dags
             newTokens.Append(token);
         } while (script.Index < script.Tokens.Length);
         // p[1] holds the name of the list
-        string? list = grod.Get(p[1].Value, true);
+        string? list = GetGlobalOrLocal(grod, script, p[1].Value, true);
         if (!string.IsNullOrWhiteSpace(list))
         {
             var items = SplitList(list);

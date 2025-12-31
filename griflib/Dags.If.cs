@@ -12,7 +12,7 @@ public partial class Dags
     /// <summary>
     /// Process an @if ... @then ... [@else if ... @then ...] [@else ...] @endif block.
     /// </summary>
-    private static List<GrifMessage> ProcessIf(ScriptObj script, Grod grod)
+    private static List<GrifMessage> ProcessIf(Grod grod, ScriptObj script)
     {
         // conditions
         bool notFlag;
@@ -26,7 +26,7 @@ public partial class Dags
                 notFlag = !notFlag;
                 script.Index++;
             }
-            var cond = GetCondition(script, grod);
+            var cond = GetCondition(grod, script);
             if (script.Index >= script.Tokens.Length)
             {
                 throw new SystemException(_invalidIfSyntax);
@@ -44,7 +44,7 @@ public partial class Dags
                     if (script.Tokens[script.Index].Equals(ELSEIF_TOKEN, OIC))
                     {
                         script.Index++;
-                        return ProcessIf(script, grod);
+                        return ProcessIf(grod, script);
                     }
                     if (script.Tokens[script.Index].Equals(ENDIF_TOKEN, OIC))
                     {
@@ -65,7 +65,7 @@ public partial class Dags
                     if (script.Tokens[script.Index].Equals(ELSEIF_TOKEN, OIC))
                     {
                         script.Index++;
-                        return ProcessIf(script, grod);
+                        return ProcessIf(grod, script);
                     }
                     if (script.Tokens[script.Index].Equals(ENDIF_TOKEN, OIC))
                     {
@@ -100,7 +100,7 @@ public partial class Dags
                 SkipOverEndif(script);
                 return result;
             }
-            result.AddRange(ProcessOneCommand(script, grod));
+            result.AddRange(ProcessOneCommand(grod, script));
         }
         throw new SystemException(_invalidIfSyntax);
     }
@@ -165,9 +165,9 @@ public partial class Dags
     /// <summary>
     /// Get the condition for an if statement.
     /// </summary>
-    private static bool GetCondition(ScriptObj script, Grod grod)
+    private static bool GetCondition(Grod grod, ScriptObj script)
     {
-        var answer = ProcessOneCommand(script, grod);
+        var answer = ProcessOneCommand(grod, script);
         if (answer.Count != 1
             || (answer[0].Type != MessageType.Text && answer[0].Type != MessageType.Internal))
         {

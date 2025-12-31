@@ -44,7 +44,7 @@ public partial class Dags
                     var script = CreateScript(item.Value);
                     do
                     {
-                        var answer = ProcessOneCommand(script, grod);
+                        var answer = ProcessOneCommand(grod, script);
                         if (answer.Count > 0)
                         {
                             result.AddRange(answer);

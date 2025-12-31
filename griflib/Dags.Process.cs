@@ -8,7 +8,7 @@ public partial class Dags
     /// <summary>
     /// Process one command from the token list.
     /// </summary>
-    private static List<GrifMessage> ProcessOneCommand(ScriptObj script, Grod grod)
+    private static List<GrifMessage> ProcessOneCommand(Grod grod, ScriptObj script)
     {
         List<GrifMessage> result = [];
         string? value;
@@ -38,7 +38,7 @@ public partial class Dags
                 switch (token.ToLower())
                 {
                     case IF_TOKEN:
-                        result.AddRange(ProcessIf(script, grod));
+                        result.AddRange(ProcessIf(grod, script));
                         break;
                     case GETINCHANNEL_TOKEN:
                         result.Add(new GrifMessage(MessageType.Internal, grod.Get(INCHANNEL, true) ?? ""));
@@ -62,7 +62,7 @@ public partial class Dags
                     case THEN_TOKEN:
                         throw new SystemException($"Token found out of context: {token}");
                     default:
-                        value = grod.Get(token, true);
+                        value = GetGlobalOrLocal(grod, script, token, true);
                         if (value != null)
                         {
                             var userResult = Process(grod, value);
@@ -73,7 +73,7 @@ public partial class Dags
                 }
                 return result;
             }
-            var p = GetParameters(script, grod);
+            var p = GetParameters(grod, script);
             switch (token.ToLower())
             {
                 case ABS_TOKEN:
@@ -94,14 +94,14 @@ public partial class Dags
                     break;
                 case ADDLIST_TOKEN:
                     CheckParameterCount(p, 2);
-                    AddListItem(grod, p[0].Value, p[1].Value);
+                    AddListItem(grod, script, p[0].Value, p[1].Value);
                     break;
                 case ADDTO_TOKEN:
                     CheckParameterCount(p, 2);
-                    long1 = GetNumberValue(grod.Get(p[0].Value, true));
+                    long1 = GetNumberValue(GetGlobalOrLocal(grod, script, p[0].Value, true));
                     long2 = GetNumberValue(p[1].Value);
                     longAnswer = long1 + long2;
-                    grod.Set(p[0].Value, longAnswer.ToString());
+                    SetGlobalOrLocal(grod, script, p[0].Value, longAnswer.ToString());
                     break;
                 case BITWISEAND_TOKEN:
                     CheckParameterCount(p, 2);
@@ -138,7 +138,7 @@ public partial class Dags
                     break;
                 case CLEARARRAY_TOKEN:
                     CheckParameterCount(p, 1);
-                    ClearArray(grod, p[0].Value);
+                    ClearArray(grod, script, p[0].Value);
                     break;
                 case CLEARBIT_TOKEN:
                     CheckParameterCount(p, 2);
@@ -157,7 +157,7 @@ public partial class Dags
                     {
                         throw new SystemException($"{token}): List name cannot be blank");
                     }
-                    grod.Set(p[0].Value, null);
+                    SetGlobalOrLocal(grod, script, p[0].Value, null);
                     break;
                 case COMMENT_TOKEN:
                     // Ignore comments
@@ -222,14 +222,14 @@ public partial class Dags
                     break;
                 case DIVTO_TOKEN:
                     CheckParameterCount(p, 2);
-                    long1 = GetNumberValue(grod.Get(p[0].Value, true));
+                    long1 = GetNumberValue(GetGlobalOrLocal(grod, script, p[0].Value, true));
                     long2 = GetNumberValue(p[1].Value);
                     if (long2 == 0)
                     {
                         throw new SystemException("Division by zero is not allowed.");
                     }
                     long1 /= long2;
-                    grod.Set(p[0].Value, long1.ToString());
+                    SetGlobalOrLocal(grod, script, p[0].Value, long1.ToString());
                     break;
                 case EQ_TOKEN:
                     CheckParameterCount(p, 2);
@@ -263,7 +263,7 @@ public partial class Dags
                     break;
                 case EXISTS_TOKEN:
                     CheckParameterCount(p, 1);
-                    value = grod.Get(p[0].Value, true);
+                    value = GetGlobalOrLocal(grod, script, p[0].Value, true);
                     result.Add(new GrifMessage(MessageType.Internal, TrueFalse(!IsNullOrEmpty(value))));
                     break;
                 case ISFALSE_TOKEN:
@@ -292,18 +292,18 @@ public partial class Dags
                     break;
                 case FOR_TOKEN:
                     CheckParameterCount(p, 3);
-                    HandleFor(p, script, grod, result);
+                    HandleFor(grod, script, p, result);
                     break;
                 case FOREACHKEY_TOKEN:
                     if (p.Count != 2 && p.Count != 3)
                     {
                         CheckParameterCount(p, 3);
                     }
-                    HandleForEachKey(p, script, grod, result);
+                    HandleForEachKey(grod, script, p, result);
                     break;
                 case FOREACHLIST_TOKEN:
                     CheckParameterCount(p, 2);
-                    HandleForEachList(p, script, grod, result);
+                    HandleForEachList(grod, script, p, result);
                     break;
                 case FORMAT_TOKEN:
                     CheckParameterAtLeastOne(p);
@@ -351,7 +351,7 @@ public partial class Dags
                     break;
                 case GET_TOKEN:
                     CheckParameterCount(p, 1);
-                    value = grod.Get(p[0].Value, true) ?? "";
+                    value = GetGlobalOrLocal(grod, script, p[0].Value, true) ?? "";
                     result.Add(new GrifMessage(MessageType.Internal, value));
                     break;
                 case GETARRAY_TOKEN:
@@ -362,7 +362,7 @@ public partial class Dags
                     }
                     long1 = GetNumberValue(p[1].Value);
                     long2 = GetNumberValue(p[2].Value);
-                    value = GetArrayItem(grod, p[0].Value, long1, long2);
+                    value = GetArrayItem(grod, script, p[0].Value, long1, long2);
                     result.Add(new GrifMessage(MessageType.Internal, value ?? ""));
                     break;
                 case GETBIT_TOKEN:
@@ -387,12 +387,12 @@ public partial class Dags
                         throw new SystemException("List name cannot be blank");
                     }
                     long1 = GetNumberValue(p[1].Value);
-                    value = GetListItem(grod, p[0].Value, long1);
+                    value = GetListItem(grod, script, p[0].Value, long1);
                     result.Add(new GrifMessage(MessageType.Internal, value ?? ""));
                     break;
                 case GETVALUE_TOKEN:
                     CheckParameterCount(p, 1);
-                    value = GetValue(grod, grod.Get(p[0].Value, true));
+                    value = GetValue(grod, GetGlobalOrLocal(grod, script, p[0].Value, true));
                     result.Add(new GrifMessage(MessageType.Internal, value));
                     break;
                 case GOLABEL_TOKEN:
@@ -430,7 +430,7 @@ public partial class Dags
                 case INSERTATLIST_TOKEN:
                     CheckParameterCount(p, 3);
                     long1 = GetNumberValue(p[1].Value);
-                    InsertAtListItem(grod, p[0].Value, long1, p[2].Value);
+                    InsertAtListItem(grod, script, p[0].Value, long1, p[2].Value);
                     break;
                 case ISBOOL_TOKEN:
                     CheckParameterCount(p, 1);
@@ -457,7 +457,7 @@ public partial class Dags
                     break;
                 case ISSCRIPT_TOKEN:
                     CheckParameterCount(p, 1);
-                    value = grod.Get(p[0].Value, true);
+                    value = GetGlobalOrLocal(grod, script, p[0].Value, true);
                     if (IsNull(value))
                     {
                         result.Add(new GrifMessage(MessageType.Internal, FALSE));
@@ -502,7 +502,7 @@ public partial class Dags
                     {
                         throw new SystemException($"{token}): List name cannot be blank");
                     }
-                    value = grod.Get(p[0].Value, true);
+                    value = GetGlobalOrLocal(grod, script, p[0].Value, true);
                     if (IsNullOrEmpty(value))
                     {
                         result.Add(new GrifMessage(MessageType.Internal, "0"));
@@ -566,18 +566,18 @@ public partial class Dags
                     break;
                 case MODTO_TOKEN:
                     CheckParameterCount(p, 2);
-                    long1 = GetNumberValue(grod.Get(p[0].Value, true));
+                    long1 = GetNumberValue(GetGlobalOrLocal(grod, script, p[0].Value, true));
                     long2 = GetNumberValue(p[1].Value);
                     long1 %= long2;
                     if (long1 < 0) // make positive
                     {
                         long1 += long2;
                     }
-                    grod.Set(p[0].Value, long1.ToString());
+                    SetGlobalOrLocal(grod, script, p[0].Value, long1.ToString());
                     break;
                 case MSG_TOKEN:
                     CheckParameterCount(p, 1);
-                    var tempResult = Dags.Process(grod, grod.Get(p[0].Value, true));
+                    var tempResult = Process(grod, GetGlobalOrLocal(grod, script, p[0].Value, true));
                     foreach (var msgItem in tempResult)
                     {
                         if (msgItem.Type == MessageType.Text || msgItem.Type == MessageType.Internal)
@@ -600,10 +600,10 @@ public partial class Dags
                     break;
                 case MULTO_TOKEN:
                     CheckParameterCount(p, 2);
-                    long1 = GetNumberValue(grod.Get(p[0].Value, true));
+                    long1 = GetNumberValue(GetGlobalOrLocal(grod, script, p[0].Value, true));
                     long2 = GetNumberValue(p[1].Value);
                     long1 *= long2;
-                    grod.Set(p[0].Value, long1.ToString());
+                    SetGlobalOrLocal(grod, script, p[0].Value, long1.ToString());
                     break;
                 case NE_TOKEN:
                     CheckParameterCount(p, 2);
@@ -638,9 +638,9 @@ public partial class Dags
                     break;
                 case NEGTO_TOKEN:
                     CheckParameterCount(p, 1);
-                    long1 = GetNumberValue(grod.Get(p[0].Value, true));
+                    long1 = GetNumberValue(GetGlobalOrLocal(grod, script, p[0].Value, true));
                     long1 = -long1;
-                    grod.Set(p[0].Value, long1.ToString());
+                    SetGlobalOrLocal(grod, script, p[0].Value, long1.ToString());
                     break;
                 case ISNULL_TOKEN:
                 case ISNULL2_TOKEN:
@@ -657,7 +657,7 @@ public partial class Dags
                 case REMOVEATLIST_TOKEN:
                     CheckParameterCount(p, 2);
                     long1 = GetNumberValue(p[1].Value);
-                    RemoveAtListItem(grod, p[0].Value, long1);
+                    RemoveAtListItem(grod, script, p[0].Value, long1);
                     break;
                 case REPLACE_TOKEN:
                     CheckParameterCount(p, 3);
@@ -670,7 +670,7 @@ public partial class Dags
                     break;
                 case SCRIPT_TOKEN:
                     CheckParameterCount(p, 1);
-                    value = grod.Get(p[0].Value, true);
+                    value = GetGlobalOrLocal(grod, script, p[0].Value, true);
                     if (!string.IsNullOrWhiteSpace(value))
                     {
                         var scriptResult = Process(grod, value);
@@ -679,7 +679,7 @@ public partial class Dags
                     break;
                 case SET_TOKEN:
                     CheckParameterCount(p, 2);
-                    grod.Set(p[0].Value, p[1].Value);
+                    SetGlobalOrLocal(grod, script, p[0].Value, p[1].Value);
                     break;
                 case SETARRAY_TOKEN:
                     CheckParameterCount(p, 4);
@@ -689,7 +689,7 @@ public partial class Dags
                     }
                     long1 = GetNumberValue(p[1].Value); // y
                     long2 = GetNumberValue(p[2].Value); // x
-                    SetArrayItem(grod, p[0].Value, long1, long2, p[3].Value);
+                    SetArrayItem(grod, script, p[0].Value, long1, long2, p[3].Value);
                     break;
                 case SETBIT_TOKEN:
                     CheckParameterCount(p, 2);
@@ -705,7 +705,7 @@ public partial class Dags
                 case SETLIST_TOKEN:
                     CheckParameterCount(p, 3);
                     long1 = GetNumberValue(p[1].Value);
-                    SetListItem(grod, p[0].Value, long1, p[2].Value);
+                    SetListItem(grod, script, p[0].Value, long1, p[2].Value);
                     break;
                 case SETOUTCHANNEL_TOKEN:
                     if (p.Count == 1)
@@ -743,16 +743,16 @@ public partial class Dags
                     break;
                 case SUBTO_TOKEN:
                     CheckParameterCount(p, 2);
-                    long1 = GetNumberValue(grod.Get(p[0].Value, true));
+                    long1 = GetNumberValue(GetGlobalOrLocal(grod, script, p[0].Value, true));
                     long2 = GetNumberValue(p[1].Value);
                     long1 -= long2;
-                    grod.Set(p[0].Value, long1.ToString());
+                    SetGlobalOrLocal(grod, script, p[0].Value, long1.ToString());
                     break;
                 case SWAP_TOKEN:
                     CheckParameterCount(p, 2);
-                    value = grod.Get(p[0].Value, true);
-                    grod.Set(p[0].Value, grod.Get(p[1].Value, true));
-                    grod.Set(p[1].Value, value);
+                    value = GetGlobalOrLocal(grod, script, p[0].Value, true);
+                    SetGlobalOrLocal(grod, script, p[0].Value, GetGlobalOrLocal(grod, script, p[1].Value, true));
+                    SetGlobalOrLocal(grod, script, p[1].Value, value);
                     break;
                 case TOBINARY_TOKEN:
                     CheckParameterCount(p, 1);
@@ -812,7 +812,7 @@ public partial class Dags
                     {
                         var sleepParam = p.Count > 0 ? GetNumberValue(p[0].Value) : 0;
                     }
-                    var userResult = GetUserDefinedFunctionValues(token, p, grod);
+                    var userResult = GetUserDefinedFunctionValues(grod, script, token, p);
                     result.AddRange(userResult);
                     break;
             }
