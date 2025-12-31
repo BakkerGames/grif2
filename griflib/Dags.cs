@@ -41,16 +41,15 @@ public partial class Dags
                 }
                 if (IsScript(item.Value))
                 {
-                    var tokens = SplitTokens(item.Value);
-                    int index = 0;
+                    var script = CreateScript(item.Value);
                     do
                     {
-                        var answer = ProcessOneCommand(tokens, ref index, grod);
+                        var answer = ProcessOneCommand(script, grod);
                         if (answer.Count > 0)
                         {
                             result.AddRange(answer);
                         }
-                    } while (index < tokens.Length);
+                    } while (script.Index < script.Tokens.Length);
                     continue;
                 }
                 // plain text

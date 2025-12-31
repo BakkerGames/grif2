@@ -5,8 +5,17 @@ namespace GrifLib;
 
 public partial class Dags
 {
+    public static ScriptObj CreateScript(string? script)
+    {
+        return new ScriptObj
+        {
+            Tokens = SplitTokens(script),
+            Index = 0
+        };
+    }
+
     /// <summary>
-    /// Split the script into tokens for processing.
+    /// Split the script into script.Tokens for processing.
     /// </summary>
     public static string[] SplitTokens(string? script)
     {
@@ -163,17 +172,17 @@ public partial class Dags
     /// Format the script with line breaks and indents.
     /// Parameter "indent" adds one extra tab at the beginning of each line.
     /// </summary>
-    public static string PrettyScript(string? script, bool indent = false)
+    public static string PrettyScript(string? scriptText, bool indent = false)
     {
         StringBuilder result = new();
 
-        if (!IsScript(script))
+        if (!IsScript(scriptText))
         {
             if (indent)
             {
                 result.Append('\t');
             }
-            result.Append(script);
+            result.Append(scriptText);
             return result.ToString();
         }
 
@@ -184,9 +193,9 @@ public partial class Dags
         bool forLine = false;
         bool forEachKeyLine = false;
         bool forEachListLine = false;
-        var tokens = SplitTokens(script);
+        var script = CreateScript(scriptText);
 
-        foreach (string s in tokens)
+        foreach (string s in script.Tokens)
         {
             switch (s.ToLower())
             {
@@ -283,17 +292,17 @@ public partial class Dags
     /// <summary>
     /// Format the script in a single line with minimal spaces.
     /// </summary>
-    public static string CompressScript(string? script)
+    public static string CompressScript(string? scriptText)
     {
-        if (!IsScript(script))
+        if (!IsScript(scriptText))
         {
-            return script ?? "";
+            return scriptText ?? "";
         }
         StringBuilder result = new();
-        var tokens = SplitTokens(script);
+        var script = CreateScript(scriptText);
         char lastChar = ',';
         bool addSpace;
-        foreach (string s in tokens)
+        foreach (string s in script.Tokens)
         {
             addSpace = false;
             if (s.StartsWith(SCRIPT_CHAR))
@@ -328,20 +337,20 @@ public partial class Dags
     /// <summary>
     /// Validate the script for correct syntax.
     /// </summary>
-    public static bool ValidateScript(string? script)
+    public static bool ValidateScript(string? scriptText)
     {
-        if (!IsScript(script))
+        if (!IsScript(scriptText))
         {
             return true;
         }
-        var tokens = SplitTokens(script);
+        var script = CreateScript(scriptText);
         int parens = 0;
         int ifCount = 0;
         bool inIf = false;
         int forCount = 0;
         int forEachKeyCount = 0;
         int forEachListCount = 0;
-        foreach (string s in tokens)
+        foreach (string s in script.Tokens)
         {
             if (s.StartsWith(SCRIPT_CHAR) && s.EndsWith('('))
             {
@@ -513,42 +522,42 @@ public partial class Dags
     #region Private routines
 
     /// <summary>
-    /// Get parameters from tokens starting at the specified index.
+    /// Get parameters from script.Tokens starting at the specified script.Index.
     /// </summary>
-    private static List<GrifMessage> GetParameters(string[] tokens, ref int index, Grod grod)
+    private static List<GrifMessage> GetParameters(ScriptObj script, Grod grod)
     {
         List<GrifMessage> parameters = [];
-        while (index < tokens.Length && tokens[index] != ")")
+        while (script.Index < script.Tokens.Length && script.Tokens[script.Index] != ")")
         {
-            var token = tokens[index];
+            var token = script.Tokens[script.Index];
             if (IsScript(token))
             {
-                // Handle nested tokens
-                parameters.AddRange(ProcessOneCommand(tokens, ref index, grod));
+                // Handle nested script.Tokens
+                parameters.AddRange(ProcessOneCommand(script, grod));
             }
             else
             {
                 parameters.Add(new GrifMessage(MessageType.Internal, TrimQuotes(token)));
-                index++;
+                script.Index++;
             }
-            if (index < tokens.Length)
+            if (script.Index < script.Tokens.Length)
             {
-                if (tokens[index] == ")")
+                if (script.Tokens[script.Index] == ")")
                 {
                     break; // End of parameters
                 }
-                if (tokens[index] != ",")
+                if (script.Tokens[script.Index] != ",")
                 {
                     throw new SystemException("Missing comma in parameters");
                 }
-                index++; // Skip the comma
+                script.Index++; // Skip the comma
             }
         }
-        if (index >= tokens.Length || tokens[index] != ")")
+        if (script.Index >= script.Tokens.Length || script.Tokens[script.Index] != ")")
         {
             throw new SystemException("Missing closing parenthesis");
         }
-        index++; // Skip the closing parenthesis
+        script.Index++; // Skip the closing parenthesis
         return parameters;
     }
 
@@ -829,7 +838,7 @@ public partial class Dags
     }
 
     /// <summary>
-    /// Insert an item at a specific index in a comma-delimited list in the Grod.
+    /// Insert an item at a specific script.Index in a comma-delimited list in the Grod.
     /// </summary>
     private static void InsertAtListItem(Grod grod, string key, long x, string? value)
     {
@@ -856,7 +865,7 @@ public partial class Dags
     }
 
     /// <summary>
-    /// Remove an item at a specific index in a comma-delimited list in the Grod.
+    /// Remove an item at a specific script.Index in a comma-delimited list in the Grod.
     /// </summary>
     private static void RemoveAtListItem(Grod grod, string key, long x)
     {

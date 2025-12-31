@@ -8,15 +8,15 @@ public partial class Dags
     /// <summary>
     /// Handle @for...@endfor
     /// </summary>
-    private static void HandleFor(List<GrifMessage> p, string[] tokens, ref int index, Grod grod, List<GrifMessage> result)
+    private static void HandleFor(List<GrifMessage> p, ScriptObj script, Grod grod, List<GrifMessage> result)
     {
         // @for(i,<start>,<end inclusive>)=...$i...@endfor
         var iterator = "$" + p[0].Value;
-        var startIndex = index;
+        var startIndex = script.Index;
         var level = 0;
         do
         {
-            var token = tokens[index++];
+            var token = script.Tokens[script.Index++];
             if (token.Equals(FOR_TOKEN, OIC))
             {
                 level++;
@@ -29,8 +29,8 @@ public partial class Dags
                 }
                 level--;
             }
-        } while (index < tokens.Length);
-        var endIndex = index - 2;
+        } while (script.Index < script.Tokens.Length);
+        var endIndex = script.Index - 2;
         var int1 = long.Parse(p[1].Value);
         var int2 = long.Parse(p[2].Value);
         for (long value = int1; value <= int2; value++)
@@ -38,37 +38,40 @@ public partial class Dags
             List<string> loopTokens = [];
             for (int i = startIndex; i <= endIndex; i++)
             {
-                var token = tokens[i];
+                var token = script.Tokens[i];
                 if (token.Contains(iterator, OIC))
                 {
                     token = token.Replace(iterator, value.ToString());
                 }
                 loopTokens.Add(token);
             }
-            string[] loopArray = [.. loopTokens];
-            var loopIndex = 0;
+            ScriptObj loopScript = new()
+            {
+                Tokens = [.. loopTokens],
+                Index = 0
+            };
             do
             {
-                var answer = ProcessOneCommand(loopArray, ref loopIndex, grod);
+                var answer = ProcessOneCommand(loopScript, grod);
                 if (answer.Count > 0)
                 {
                     result.AddRange(answer);
                 }
-            } while (loopIndex < loopArray.Length);
+            } while (loopScript.Index < loopScript.Tokens.Length);
         }
     }
 
     /// <summary>
     /// Handle @foreachkey...@endforeachkey
     /// </summary>
-    private static void HandleForEachKey(List<GrifMessage> p, string[] tokens, ref int index, Grod grod, List<GrifMessage> result)
+    private static void HandleForEachKey(List<GrifMessage> p, ScriptObj script, Grod grod, List<GrifMessage> result)
     {
         // @foreachkey(i,prefix,[suffix])=...$i...@endforeachkey
         var newTokens = new StringBuilder();
         var level = 0;
         do
         {
-            var token = tokens[index++];
+            var token = script.Tokens[script.Index++];
             if (token.Equals(FOREACHKEY_TOKEN, OIC))
             {
                 level++;
@@ -86,7 +89,7 @@ public partial class Dags
                 newTokens.Append(' ');
             }
             newTokens.Append(token);
-        } while (index < tokens.Length);
+        } while (script.Index < script.Tokens.Length);
         var keys = grod.Keys(p[1].Value, true, true);
         foreach (string key in keys)
         {
@@ -97,22 +100,22 @@ public partial class Dags
                     continue;
                 value = value[..^p[2].Value.Length];
             }
-            var script = newTokens.ToString().Replace($"${p[0].Value}", value);
-            result.AddRange(Process(grod, script));
+            var newScript = newTokens.ToString().Replace($"${p[0].Value}", value);
+            result.AddRange(Process(grod, newScript));
         }
     }
 
     /// <summary>
     /// Handle @foreachlist...@endforeachlist
     /// </summary>
-    private static void HandleForEachList(List<GrifMessage> p, string[] tokens, ref int index, Grod grod, List<GrifMessage> result)
+    private static void HandleForEachList(List<GrifMessage> p, ScriptObj script, Grod grod, List<GrifMessage> result)
     {
         // @foreachlist(x,listname)=...$x...@endforeachlist
         var newTokens = new StringBuilder();
         var level = 0;
         do
         {
-            var token = tokens[index++];
+            var token = script.Tokens[script.Index++];
             if (token.Equals(FOREACHLIST_TOKEN, OIC))
             {
                 level++;
@@ -130,7 +133,7 @@ public partial class Dags
                 newTokens.Append(' ');
             }
             newTokens.Append(token);
-        } while (index < tokens.Length);
+        } while (script.Index < script.Tokens.Length);
         // p[1] holds the name of the list
         string? list = grod.Get(p[1].Value, true);
         if (!string.IsNullOrWhiteSpace(list))
@@ -141,8 +144,8 @@ public partial class Dags
                 var value2 = FixListItemOut(value);
                 if (!string.IsNullOrEmpty(value2))
                 {
-                    var script = newTokens.ToString().Replace($"${p[0].Value}", value2);
-                    result.AddRange(Process(grod, script));
+                    var newScript = newTokens.ToString().Replace($"${p[0].Value}", value2);
+                    result.AddRange(Process(grod, newScript));
                 }
             }
         }

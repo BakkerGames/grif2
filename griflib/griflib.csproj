@@ -10,7 +10,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <Title>GrifLib - Game Runner for Interactive Fiction Library</Title>
-    <Version>2.2025.1227.1</Version>
+    <Version>2.2025.1230</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

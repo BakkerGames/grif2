@@ -12,22 +12,22 @@ public partial class Dags
     /// <summary>
     /// Process an @if ... @then ... [@else if ... @then ...] [@else ...] @endif block.
     /// </summary>
-    private static List<GrifMessage> ProcessIf(string[] tokens, ref int index, Grod grod)
+    private static List<GrifMessage> ProcessIf(ScriptObj script, Grod grod)
     {
         // conditions
         bool notFlag;
         string token;
-        while (index < tokens.Length)
+        while (script.Index < script.Tokens.Length)
         {
             notFlag = false;
-            while (index < tokens.Length &&
-                tokens[index].Equals(NOT_TOKEN, OIC))
+            while (script.Index < script.Tokens.Length &&
+                script.Tokens[script.Index].Equals(NOT_TOKEN, OIC))
             {
                 notFlag = !notFlag;
-                index++;
+                script.Index++;
             }
-            var cond = GetCondition(tokens, ref index, grod);
-            if (index >= tokens.Length)
+            var cond = GetCondition(script, grod);
+            if (script.Index >= script.Tokens.Length)
             {
                 throw new SystemException(_invalidIfSyntax);
             }
@@ -35,24 +35,24 @@ public partial class Dags
             {
                 cond = !cond;
             }
-            token = tokens[index++].ToLower();
+            token = script.Tokens[script.Index++].ToLower();
             if (token == THEN_TOKEN)
             {
                 if (!cond)
                 {
-                    SkipToElseEndif(tokens, ref index);
-                    if (tokens[index].Equals(ELSEIF_TOKEN, OIC))
+                    SkipToElseEndif(script);
+                    if (script.Tokens[script.Index].Equals(ELSEIF_TOKEN, OIC))
                     {
-                        index++;
-                        return ProcessIf(tokens, ref index, grod);
+                        script.Index++;
+                        return ProcessIf(script, grod);
                     }
-                    if (tokens[index].Equals(ENDIF_TOKEN, OIC))
+                    if (script.Tokens[script.Index].Equals(ENDIF_TOKEN, OIC))
                     {
-                        index++;
+                        script.Index++;
                         return [];
                     }
                     // @else
-                    index++;
+                    script.Index++;
                 }
                 break;
             }
@@ -60,20 +60,20 @@ public partial class Dags
             {
                 if (!cond)
                 {
-                    SkipOverThen(tokens, ref index);
-                    SkipToElseEndif(tokens, ref index);
-                    if (tokens[index].Equals(ELSEIF_TOKEN, OIC))
+                    SkipOverThen(script);
+                    SkipToElseEndif(script);
+                    if (script.Tokens[script.Index].Equals(ELSEIF_TOKEN, OIC))
                     {
-                        index++;
-                        return ProcessIf(tokens, ref index, grod);
+                        script.Index++;
+                        return ProcessIf(script, grod);
                     }
-                    if (tokens[index].Equals(ENDIF_TOKEN, OIC))
+                    if (script.Tokens[script.Index].Equals(ENDIF_TOKEN, OIC))
                     {
-                        index++;
+                        script.Index++;
                         return [];
                     }
                     // @else
-                    index++;
+                    script.Index++;
                     break;
                 }
             }
@@ -81,7 +81,7 @@ public partial class Dags
             {
                 if (cond)
                 {
-                    SkipOverThen(tokens, ref index);
+                    SkipOverThen(script);
                     break;
                 }
             }
@@ -92,47 +92,47 @@ public partial class Dags
         }
         // process all commands in this section
         List<GrifMessage> result = [];
-        while (index < tokens.Length)
+        while (script.Index < script.Tokens.Length)
         {
-            token = tokens[index].ToLower();
+            token = script.Tokens[script.Index].ToLower();
             if (token == ELSE_TOKEN || token == ELSEIF_TOKEN || token == ENDIF_TOKEN)
             {
-                SkipOverEndif(tokens, ref index);
+                SkipOverEndif(script);
                 return result;
             }
-            result.AddRange(ProcessOneCommand(tokens, ref index, grod));
+            result.AddRange(ProcessOneCommand(script, grod));
         }
         throw new SystemException(_invalidIfSyntax);
     }
 
     /// <summary>
-    /// Skip over tokens until the matching @endif is found.
+    /// Skip over script.Tokens until the matching @endif is found.
     /// </summary>
-    private static void SkipOverEndif(string[] tokens, ref int index)
+    private static void SkipOverEndif(ScriptObj script)
     {
-        while (index < tokens.Length)
+        while (script.Index < script.Tokens.Length)
         {
-            var token = tokens[index++];
+            var token = script.Tokens[script.Index++];
             if (token.Equals(ENDIF_TOKEN, OIC))
             {
                 return;
             }
             if (token.Equals(IF_TOKEN, OIC))
             {
-                SkipOverEndif(tokens, ref index);
+                SkipOverEndif(script);
             }
         }
         throw new SystemException($"Missing {ENDIF_TOKEN}");
     }
 
     /// <summary>
-    /// Skip over tokens until the matching @then is found.
+    /// Skip over script.Tokens until the matching @then is found.
     /// </summary>
-    private static void SkipOverThen(string[] tokens, ref int index)
+    private static void SkipOverThen(ScriptObj script)
     {
-        while (index < tokens.Length)
+        while (script.Index < script.Tokens.Length)
         {
-            var token = tokens[index++].ToLower();
+            var token = script.Tokens[script.Index++].ToLower();
             if (token == THEN_TOKEN)
             {
                 return;
@@ -144,19 +144,19 @@ public partial class Dags
     /// <summary>
     /// Skip to the next @else, @elseif, or @endif token.
     /// </summary>
-    private static void SkipToElseEndif(string[] tokens, ref int index)
+    private static void SkipToElseEndif(ScriptObj script)
     {
-        while (index < tokens.Length)
+        while (script.Index < script.Tokens.Length)
         {
-            var token = tokens[index].ToLower();
+            var token = script.Tokens[script.Index].ToLower();
             if (token == ELSE_TOKEN || token == ELSEIF_TOKEN || token == ENDIF_TOKEN)
             {
                 return;
             }
-            index++;
+            script.Index++;
             if (token.Equals(IF_TOKEN, OIC))
             {
-                SkipOverEndif(tokens, ref index);
+                SkipOverEndif(script);
             }
         }
         throw new SystemException(_invalidIfSyntax);
@@ -165,9 +165,9 @@ public partial class Dags
     /// <summary>
     /// Get the condition for an if statement.
     /// </summary>
-    private static bool GetCondition(string[] tokens, ref int index, Grod grod)
+    private static bool GetCondition(ScriptObj script, Grod grod)
     {
-        var answer = ProcessOneCommand(tokens, ref index, grod);
+        var answer = ProcessOneCommand(script, grod);
         if (answer.Count != 1
             || (answer[0].Type != MessageType.Text && answer[0].Type != MessageType.Internal))
         {

@@ -298,3 +298,7 @@
 - Parse a single number as input value.
 - Moved Version to GrifLib.Common.
 - Allow multple input files on command line.
+
+2025-12-30
+- New ScriptObj to hold both tokens and index.
+- Changed all commands to use ScriptObj instead of string list and index.

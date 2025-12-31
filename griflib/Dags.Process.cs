@@ -8,7 +8,7 @@ public partial class Dags
     /// <summary>
     /// Process one command from the token list.
     /// </summary>
-    private static List<GrifMessage> ProcessOneCommand(string[] tokens, ref int index, Grod grod)
+    private static List<GrifMessage> ProcessOneCommand(ScriptObj script, Grod grod)
     {
         List<GrifMessage> result = [];
         string? value;
@@ -17,28 +17,28 @@ public partial class Dags
         bool boolAnswer;
         bool isNull0;
         bool isNull1;
-        string[] list1 = [];
-        string[] list2 = [];
+        string[] list1;
+        string[] list2;
         try
         {
-            if (index >= tokens.Length)
+            if (script.Index >= script.Tokens.Length)
             {
                 return result;
             }
-            var token = tokens[index++];
+            var token = script.Tokens[script.Index++];
             // static value
             if (!token.StartsWith(SCRIPT_CHAR))
             {
                 result.Add(new GrifMessage(MessageType.Internal, token));
                 return result;
             }
-            // tokens without parameters
+            // script.Tokens without parameters
             if (!token.EndsWith('('))
             {
                 switch (token.ToLower())
                 {
                     case IF_TOKEN:
-                        result.AddRange(ProcessIf(tokens, ref index, grod));
+                        result.AddRange(ProcessIf(script, grod));
                         break;
                     case GETINCHANNEL_TOKEN:
                         result.Add(new GrifMessage(MessageType.Internal, grod.Get(INCHANNEL, true) ?? ""));
@@ -48,7 +48,7 @@ public partial class Dags
                         result.Add(new GrifMessage(MessageType.Text, NL_CHAR));
                         break;
                     //case RETURN_TOKEN:
-                    //    index = tokens.Length; // End processing
+                    //    script.Index = script.Tokens.Length; // End processing
                     //    return result;
                     case AND_TOKEN:
                     case ELSEIF_TOKEN:
@@ -73,7 +73,7 @@ public partial class Dags
                 }
                 return result;
             }
-            var p = GetParameters(tokens, ref index, grod);
+            var p = GetParameters(script, grod);
             switch (token.ToLower())
             {
                 case ABS_TOKEN:
@@ -292,18 +292,18 @@ public partial class Dags
                     break;
                 case FOR_TOKEN:
                     CheckParameterCount(p, 3);
-                    HandleFor(p, tokens, ref index, grod, result);
+                    HandleFor(p, script, grod, result);
                     break;
                 case FOREACHKEY_TOKEN:
                     if (p.Count != 2 && p.Count != 3)
                     {
                         CheckParameterCount(p, 3);
                     }
-                    HandleForEachKey(p, tokens, ref index, grod, result);
+                    HandleForEachKey(p, script, grod, result);
                     break;
                 case FOREACHLIST_TOKEN:
                     CheckParameterCount(p, 2);
-                    HandleForEachList(p, tokens, ref index, grod, result);
+                    HandleForEachList(p, script, grod, result);
                     break;
                 case FORMAT_TOKEN:
                     CheckParameterAtLeastOne(p);
@@ -397,11 +397,11 @@ public partial class Dags
                     break;
                 case GOLABEL_TOKEN:
                     CheckParameterCount(p, 1);
-                    for (int i = 0; i < tokens.Length - 1; i++)
+                    for (int i = 0; i < script.Tokens.Length - 1; i++)
                     {
-                        if (tokens[i] == LABEL_TOKEN && tokens[i + 1] == p[0].Value && tokens[i + 2] == ")")
+                        if (script.Tokens[i] == LABEL_TOKEN && script.Tokens[i + 1] == p[0].Value && script.Tokens[i + 2] == ")")
                         {
-                            index = i + 3;
+                            script.Index = i + 3;
                         }
                     }
                     break;
@@ -822,12 +822,12 @@ public partial class Dags
         {
             // Handle exceptions and return error item
             StringBuilder error = new();
-            error.Append($"Error processing command at index {index}: ");
+            error.Append($"Error processing command at index {script.Index}: ");
             error.AppendLine(ex.Message);
             var extraInfo = new StringBuilder();
-            for (int i = 0; i < tokens.Length; i++)
+            for (int i = 0; i < script.Tokens.Length; i++)
             {
-                var token = tokens[i];
+                var token = script.Tokens[i];
                 if (token.Length > 50)
                 {
                     token = string.Concat(token.AsSpan(0, 50), "...");
