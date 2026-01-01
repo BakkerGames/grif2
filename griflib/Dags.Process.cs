@@ -25,6 +25,11 @@ public partial class Dags
             {
                 return result;
             }
+            if (script.ReturnFlag)
+            {
+                script.Index = script.Tokens.Length;
+                return result;
+            }
             var token = script.Tokens[script.Index++];
             // static value
             if (!token.StartsWith(SCRIPT_CHAR))
@@ -47,9 +52,10 @@ public partial class Dags
                     case NL_TOKEN:
                         result.Add(new GrifMessage(MessageType.Text, NL_CHAR));
                         break;
-                    //case RETURN_TOKEN:
-                    //    script.Index = script.Tokens.Length; // End processing
-                    //    return result;
+                    case RETURN_TOKEN:
+                        script.Index = script.Tokens.Length;
+                        script.ReturnFlag = true; // End processing
+                        break;
                     case AND_TOKEN:
                     case ELSEIF_TOKEN:
                     case ELSE_TOKEN:

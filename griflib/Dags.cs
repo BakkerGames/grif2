@@ -49,6 +49,10 @@ public partial class Dags
                         {
                             result.AddRange(answer);
                         }
+                        if (script.ReturnFlag)
+                        {
+                            break;
+                        }
                     } while (script.Index < script.Tokens.Length);
                     continue;
                 }

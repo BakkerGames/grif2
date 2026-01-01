@@ -27,6 +27,10 @@ public partial class Dags
                 script.Index++;
             }
             var cond = GetCondition(grod, script);
+            if (script.ReturnFlag)
+            {
+                return [];
+            }
             if (script.Index >= script.Tokens.Length)
             {
                 throw new SystemException(_invalidIfSyntax);
@@ -41,6 +45,10 @@ public partial class Dags
                 if (!cond)
                 {
                     SkipToElseEndif(script);
+                    if (script.ReturnFlag)
+                    {
+                        return [];
+                    }
                     if (script.Tokens[script.Index].Equals(ELSEIF_TOKEN, OIC))
                     {
                         script.Index++;
@@ -61,7 +69,15 @@ public partial class Dags
                 if (!cond)
                 {
                     SkipOverThen(script);
+                    if (script.ReturnFlag)
+                    {
+                        return [];
+                    }
                     SkipToElseEndif(script);
+                    if (script.ReturnFlag)
+                    {
+                        return [];
+                    }
                     if (script.Tokens[script.Index].Equals(ELSEIF_TOKEN, OIC))
                     {
                         script.Index++;
@@ -82,6 +98,10 @@ public partial class Dags
                 if (cond)
                 {
                     SkipOverThen(script);
+                    if (script.ReturnFlag)
+                    {
+                        return [];
+                    }
                     break;
                 }
             }
@@ -101,6 +121,10 @@ public partial class Dags
                 return result;
             }
             result.AddRange(ProcessOneCommand(grod, script));
+            if (script.ReturnFlag)
+            {
+                return result;
+            }
         }
         throw new SystemException(_invalidIfSyntax);
     }
@@ -110,6 +134,10 @@ public partial class Dags
     /// </summary>
     private static void SkipOverEndif(ScriptObj script)
     {
+        if (script.ReturnFlag)
+        {
+            return;
+        }
         while (script.Index < script.Tokens.Length)
         {
             var token = script.Tokens[script.Index++];
@@ -120,6 +148,10 @@ public partial class Dags
             if (token.Equals(IF_TOKEN, OIC))
             {
                 SkipOverEndif(script);
+                if (script.ReturnFlag)
+                {
+                    return;
+                }
             }
         }
         throw new SystemException($"Missing {ENDIF_TOKEN}");
@@ -130,6 +162,10 @@ public partial class Dags
     /// </summary>
     private static void SkipOverThen(ScriptObj script)
     {
+        if (script.ReturnFlag)
+        {
+            return;
+        }
         while (script.Index < script.Tokens.Length)
         {
             var token = script.Tokens[script.Index++].ToLower();
@@ -146,6 +182,10 @@ public partial class Dags
     /// </summary>
     private static void SkipToElseEndif(ScriptObj script)
     {
+        if (script.ReturnFlag)
+        {
+            return;
+        }
         while (script.Index < script.Tokens.Length)
         {
             var token = script.Tokens[script.Index].ToLower();
@@ -157,6 +197,10 @@ public partial class Dags
             if (token.Equals(IF_TOKEN, OIC))
             {
                 SkipOverEndif(script);
+                if (script.ReturnFlag)
+                {
+                    return;
+                }
             }
         }
         throw new SystemException(_invalidIfSyntax);
@@ -168,8 +212,20 @@ public partial class Dags
     private static bool GetCondition(Grod grod, ScriptObj script)
     {
         var answer = ProcessOneCommand(grod, script);
-        if (answer.Count != 1
-            || (answer[0].Type != MessageType.Text && answer[0].Type != MessageType.Internal))
+        if (script.ReturnFlag)
+        {
+            if (answer.Count == 1 && answer[0].Type == MessageType.Error)
+            {
+                throw new SystemException(answer[0].Value);
+            }
+            if (answer.Count == 1)
+            {
+                return IsTrue(answer[0].Value);
+            }
+            return false;
+        }
+        if (answer.Count != 1 || 
+            (answer[0].Type != MessageType.Text && answer[0].Type != MessageType.Internal))
         {
             throw new SystemException($"Invalid condition in {IF_TOKEN}");
         }
