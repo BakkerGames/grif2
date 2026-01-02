@@ -5,8 +5,17 @@ namespace GrifLib;
 
 public partial class Dags
 {
+    public static ScriptObj CreateScript(string? script)
+    {
+        return new ScriptObj
+        {
+            Tokens = SplitTokens(script),
+            Index = 0
+        };
+    }
+
     /// <summary>
-    /// Split the script into tokens for processing.
+    /// Split the script into script.Tokens for processing.
     /// </summary>
     public static string[] SplitTokens(string? script)
     {
@@ -163,17 +172,17 @@ public partial class Dags
     /// Format the script with line breaks and indents.
     /// Parameter "indent" adds one extra tab at the beginning of each line.
     /// </summary>
-    public static string PrettyScript(string? script, bool indent = false)
+    public static string PrettyScript(string? scriptText, bool indent = false)
     {
         StringBuilder result = new();
 
-        if (!IsScript(script))
+        if (!IsScript(scriptText))
         {
             if (indent)
             {
                 result.Append('\t');
             }
-            result.Append(script);
+            result.Append(scriptText);
             return result.ToString();
         }
 
@@ -184,9 +193,9 @@ public partial class Dags
         bool forLine = false;
         bool forEachKeyLine = false;
         bool forEachListLine = false;
-        var tokens = SplitTokens(script);
+        var script = CreateScript(scriptText);
 
-        foreach (string s in tokens)
+        foreach (string s in script.Tokens)
         {
             switch (s.ToLower())
             {
@@ -283,17 +292,17 @@ public partial class Dags
     /// <summary>
     /// Format the script in a single line with minimal spaces.
     /// </summary>
-    public static string CompressScript(string? script)
+    public static string CompressScript(string? scriptText)
     {
-        if (!IsScript(script))
+        if (!IsScript(scriptText))
         {
-            return script ?? "";
+            return scriptText ?? "";
         }
         StringBuilder result = new();
-        var tokens = SplitTokens(script);
+        var script = CreateScript(scriptText);
         char lastChar = ',';
         bool addSpace;
-        foreach (string s in tokens)
+        foreach (string s in script.Tokens)
         {
             addSpace = false;
             if (s.StartsWith(SCRIPT_CHAR))
@@ -328,20 +337,20 @@ public partial class Dags
     /// <summary>
     /// Validate the script for correct syntax.
     /// </summary>
-    public static bool ValidateScript(string? script)
+    public static bool ValidateScript(string? scriptText)
     {
-        if (!IsScript(script))
+        if (!IsScript(scriptText))
         {
             return true;
         }
-        var tokens = SplitTokens(script);
+        var script = CreateScript(scriptText);
         int parens = 0;
         int ifCount = 0;
         bool inIf = false;
         int forCount = 0;
         int forEachKeyCount = 0;
         int forEachListCount = 0;
-        foreach (string s in tokens)
+        foreach (string s in script.Tokens)
         {
             if (s.StartsWith(SCRIPT_CHAR) && s.EndsWith('('))
             {
@@ -513,42 +522,42 @@ public partial class Dags
     #region Private routines
 
     /// <summary>
-    /// Get parameters from tokens starting at the specified index.
+    /// Get parameters from script.Tokens starting at the specified script.Index.
     /// </summary>
-    private static List<GrifMessage> GetParameters(string[] tokens, ref int index, Grod grod)
+    private static List<GrifMessage> GetParameters(Grod grod, ScriptObj script)
     {
         List<GrifMessage> parameters = [];
-        while (index < tokens.Length && tokens[index] != ")")
+        while (script.Index < script.Tokens.Length && script.Tokens[script.Index] != ")")
         {
-            var token = tokens[index];
+            var token = script.Tokens[script.Index];
             if (IsScript(token))
             {
-                // Handle nested tokens
-                parameters.AddRange(ProcessOneCommand(tokens, ref index, grod));
+                // Handle nested script.Tokens
+                parameters.AddRange(ProcessOneCommand(grod, script));
             }
             else
             {
                 parameters.Add(new GrifMessage(MessageType.Internal, TrimQuotes(token)));
-                index++;
+                script.Index++;
             }
-            if (index < tokens.Length)
+            if (script.Index < script.Tokens.Length)
             {
-                if (tokens[index] == ")")
+                if (script.Tokens[script.Index] == ")")
                 {
                     break; // End of parameters
                 }
-                if (tokens[index] != ",")
+                if (script.Tokens[script.Index] != ",")
                 {
                     throw new SystemException("Missing comma in parameters");
                 }
-                index++; // Skip the comma
+                script.Index++; // Skip the comma
             }
         }
-        if (index >= tokens.Length || tokens[index] != ")")
+        if (script.Index >= script.Tokens.Length || script.Tokens[script.Index] != ")")
         {
             throw new SystemException("Missing closing parenthesis");
         }
-        index++; // Skip the closing parenthesis
+        script.Index++; // Skip the closing parenthesis
         return parameters;
     }
 
@@ -623,7 +632,7 @@ public partial class Dags
     /// <summary>
     /// Get user-defined function values.
     /// </summary>
-    private static List<GrifMessage> GetUserDefinedFunctionValues(string token, List<GrifMessage> p, Grod grod)
+    private static List<GrifMessage> GetUserDefinedFunctionValues(Grod grod, ScriptObj script, string token, List<GrifMessage> p)
     {
         var keys = grod.Keys(token, true, true);
         if (keys.Count == 0)
@@ -644,7 +653,7 @@ public partial class Dags
         {
             throw new SystemException($"Parameter count mismatch for {key}. Expected {placeholders.Length}, got {p.Count}");
         }
-        var value = grod.Get(key, true)
+        var value = GetGlobalOrLocal(grod, script, key, true)
             ?? throw new SystemException($"Key not found: {keys.First()}");
         for (int i = 0; i < placeholders.Length; i++)
         {
@@ -683,28 +692,28 @@ public partial class Dags
     /// <summary>
     /// Add an item to a comma-delimited list in the Grod.
     /// </summary>
-    private static void AddListItem(Grod grod, string key, string? value)
+    private static void AddListItem(Grod grod, ScriptObj script, string key, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
             throw new SystemException("Key cannot be null or empty.");
         }
         value = FixListItemIn(value);
-        var existing = grod.Get(key, true);
+        var existing = GetGlobalOrLocal(grod, script, key, true);
         if (string.IsNullOrEmpty(existing) || IsNull(existing))
         {
-            grod.Set(key, value);
+            SetGlobalOrLocal(grod, script, key, value);
         }
         else
         {
-            grod.Set(key, existing + "," + value);
+            SetGlobalOrLocal(grod, script, key, existing + "," + value);
         }
     }
 
     /// <summary>
     /// Clear all items in an array stored in the Grod.
     /// </summary>
-    private static void ClearArray(Grod grod, string key)
+    private static void ClearArray(Grod grod, ScriptObj script, string key)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -713,7 +722,7 @@ public partial class Dags
         var list = grod.Keys(key + ":", true, true);
         foreach (var item in list)
         {
-            grod.Set(item, null);
+            SetGlobalOrLocal(grod, script, item, null);
         }
     }
 
@@ -744,7 +753,7 @@ public partial class Dags
     /// <summary>
     /// Get an item from a 2D array stored in the Grod.
     /// </summary>
-    private static string? GetArrayItem(Grod grod, string key, long y, long x)
+    private static string? GetArrayItem(Grod grod, ScriptObj script, string key, long y, long x)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -755,13 +764,13 @@ public partial class Dags
             throw new SystemException($"Array indexes cannot be negative: {key}: {y},{x}");
         }
         var itemKey = $"{key}:{y}";
-        return GetListItem(grod, itemKey, x);
+        return GetListItem(grod, script, itemKey, x);
     }
 
     /// <summary>
     /// Set an item in a 2D array stored in the Grod.
     /// </summary>
-    private static void SetArrayItem(Grod grod, string key, long y, long x, string? value)
+    private static void SetArrayItem(Grod grod, ScriptObj script, string key, long y, long x, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -772,13 +781,13 @@ public partial class Dags
             throw new SystemException($"Array indexes cannot be negative: {key}: {y},{x}");
         }
         var itemKey = $"{key}:{y}";
-        SetListItem(grod, itemKey, x, value);
+        SetListItem(grod, script, itemKey, x, value);
     }
 
     /// <summary>
     /// Get an item from a comma-delimited list in the Grod.
     /// </summary>
-    private static string? GetListItem(Grod grod, string key, long x)
+    private static string? GetListItem(Grod grod, ScriptObj script, string key, long x)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -788,7 +797,7 @@ public partial class Dags
         {
             throw new SystemException($"List indexes cannot be negative: {key}: {x}");
         }
-        var list = grod.Get(key, true);
+        var list = GetGlobalOrLocal(grod, script, key, true);
         if (string.IsNullOrWhiteSpace(list) || IsNull(list))
         {
             return null;
@@ -804,7 +813,7 @@ public partial class Dags
     /// <summary>
     /// Set an item in a comma-delimited list in the Grod.
     /// </summary>
-    private static void SetListItem(Grod grod, string key, long x, string? value)
+    private static void SetListItem(Grod grod, ScriptObj script, string key, long x, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -814,7 +823,7 @@ public partial class Dags
         {
             throw new SystemException($"List indexes cannot be negative: {key}: {x}");
         }
-        var list = grod.Get(key, true);
+        var list = GetGlobalOrLocal(grod, script, key, true);
         if (string.IsNullOrWhiteSpace(list) || IsNull(list))
         {
             list = NULL;
@@ -825,13 +834,13 @@ public partial class Dags
             items.Add(NULL);
         }
         items[(int)x] = FixListItemIn(value);
-        grod.Set(key, string.Join(',', items));
+        SetGlobalOrLocal(grod, script, key, string.Join(',', items));
     }
 
     /// <summary>
-    /// Insert an item at a specific index in a comma-delimited list in the Grod.
+    /// Insert an item at a specific script.Index in a comma-delimited list in the Grod.
     /// </summary>
-    private static void InsertAtListItem(Grod grod, string key, long x, string? value)
+    private static void InsertAtListItem(Grod grod, ScriptObj script, string key, long x, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -841,7 +850,7 @@ public partial class Dags
         {
             throw new SystemException($"List indexes cannot be negative: {key}: {x}");
         }
-        var list = grod.Get(key, true);
+        var list = GetGlobalOrLocal(grod, script, key, true);
         if (string.IsNullOrWhiteSpace(list) || IsNull(list))
         {
             list = NULL;
@@ -852,13 +861,13 @@ public partial class Dags
             items.Add(NULL);
         }
         items.Insert((int)x, FixListItemIn(value));
-        grod.Set(key, string.Join(',', items));
+        SetGlobalOrLocal(grod, script, key, string.Join(',', items));
     }
 
     /// <summary>
-    /// Remove an item at a specific index in a comma-delimited list in the Grod.
+    /// Remove an item at a specific script.Index in a comma-delimited list in the Grod.
     /// </summary>
-    private static void RemoveAtListItem(Grod grod, string key, long x)
+    private static void RemoveAtListItem(Grod grod, ScriptObj script, string key, long x)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -868,7 +877,7 @@ public partial class Dags
         {
             throw new SystemException($"List indexes cannot be negative: {key}: {x}");
         }
-        var list = grod.Get(key, true);
+        var list = GetGlobalOrLocal(grod, script, key, true);
         if (string.IsNullOrWhiteSpace(list) || IsNull(list))
         {
             list = NULL;
@@ -879,7 +888,42 @@ public partial class Dags
             return; // Nothing to remove
         }
         items.RemoveAt((int)x);
-        grod.Set(key, string.Join(',', items));
+        SetGlobalOrLocal(grod, script, key, string.Join(',', items));
+    }
+
+    /// <summary>
+    /// Get a value from either the local script Grod or the global Grod.
+    /// </summary>
+    private static string? GetGlobalOrLocal(Grod grod, ScriptObj script, string key, bool recursive)
+    {
+        if (IsLocal(key))
+        {
+            return script.LocalData.Get(key, recursive);
+        }
+        else
+        {
+            return grod.Get(key, recursive);
+        }
+    }
+
+    private static void SetGlobalOrLocal(Grod grod, ScriptObj script, string key, string? value)
+    {
+        if (IsLocal(key))
+        {
+            script.LocalData.Set(key, value);
+        }
+        else
+        {
+            grod.Set(key, value);
+        }
+    }
+
+    /// <summary>
+    /// Get whether the value is a local variable.
+    /// </summary>
+    private static bool IsLocal(string? value)
+    {
+        return value != null && value.StartsWith(LOCAL_CHAR);
     }
 
     #endregion

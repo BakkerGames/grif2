@@ -78,6 +78,7 @@ public partial class Dags
     public const string RAND_TOKEN = "@rand(";
     public const string REMOVEATLIST_TOKEN = "@removeatlist(";
     public const string REPLACE_TOKEN = "@replace(";
+    public const string RETURN_TOKEN = "@return";
     public const string RND_TOKEN = "@rnd(";
     public const string SCRIPT_TOKEN = "@script(";
     public const string SETARRAY_TOKEN = "@setarray(";
