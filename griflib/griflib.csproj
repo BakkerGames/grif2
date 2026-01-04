@@ -6,11 +6,18 @@
     <Nullable>enable</Nullable>
     <Authors>Scott Bakker</Authors>
     <Company>BakkerGames</Company>
-    <Copyright>Copyright 2025 Scott Bakker</Copyright>
+    <Copyright>Copyright 2026 Scott Bakker</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageOutputPath>..\NuGet\</PackageOutputPath>
+    <PackageProjectUrl>https://github.com/BakkerGames/GRIF2</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/BakkerGames/GRIF2</RepositoryUrl>
     <Title>GrifLib - Game Runner for Interactive Fiction Library</Title>
-    <Version>2.2025.1230</Version>
+    <Description>Game Runner for Interactive Fiction Library
+Contains classes to develop and play interactive fiction and other game types.
+Includes IFGame, IFParser, DAGS, GROD, and IO classes.</Description>
+    <AssemblyName>griflib</AssemblyName>
+    <Version>2.2026.0104</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -25,10 +32,5 @@
     <None Include="README.md" Pack="true" PackagePath="\" />
     <None Include="LICENSE.txt" Pack="true" PackagePath="" />
   </ItemGroup>
-
-  <Target Name="CopyPackage" AfterTargets="Pack">
-    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\publish\NuGet" />
-    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\..\..\..\EXE\NuGet" />
-  </Target>
 
 </Project>
