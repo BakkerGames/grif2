@@ -21,12 +21,14 @@ public partial class Dags
     public const string DEBUG_TOKEN = "@debug(";
     public const string DIVTO_TOKEN = "@divto(";
     public const string DIV_TOKEN = "@div(";
+    public const string DO_TOKEN = "@do";
     public const string ELSEIF_TOKEN = "@elseif";
     public const string ELSE_TOKEN = "@else";
     public const string ENDFOREACHKEY_TOKEN = "@endforeachkey";
     public const string ENDFOREACHLIST_TOKEN = "@endforeachlist";
     public const string ENDFOR_TOKEN = "@endfor";
     public const string ENDIF_TOKEN = "@endif";
+    public const string ENDWHILE_TOKEN = "@endwhile";
     public const string EQ_TOKEN = "@eq(";
     public const string EXEC_TOKEN = "@exec(";
     public const string EXISTS_TOKEN = "@exists(";
@@ -96,6 +98,7 @@ public partial class Dags
     public const string TOINTEGER_TOKEN = "@tointeger(";
     public const string TRIM_TOKEN = "@trim(";
     public const string UPPER_TOKEN = "@upper(";
+    public const string WHILE_TOKEN = "@while";
     public const string WRITELINE_TOKEN = "@writeline(";
     public const string WRITE_TOKEN = "@write(";
 }

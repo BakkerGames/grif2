@@ -56,13 +56,18 @@ public partial class Dags
                         script.Index = script.Tokens.Length;
                         script.ReturnFlag = true; // End processing
                         break;
+                    case WHILE_TOKEN:
+                        result.AddRange(ProcessWhile(grod, script));
+                        break;
                     case AND_TOKEN:
+                    case DO_TOKEN:
                     case ELSEIF_TOKEN:
                     case ELSE_TOKEN:
                     case ENDFOREACHKEY_TOKEN:
                     case ENDFOREACHLIST_TOKEN:
                     case ENDFOR_TOKEN:
                     case ENDIF_TOKEN:
+                    case ENDWHILE_TOKEN:
                     case NOT_TOKEN:
                     case OR_TOKEN:
                     case THEN_TOKEN:

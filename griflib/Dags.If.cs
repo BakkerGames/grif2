@@ -207,7 +207,15 @@ public partial class Dags
     }
 
     /// <summary>
-    /// Get the condition for an if statement.
+    /// Process @while ... @do ... @endwhile statement
+    /// </summary>
+    private static List<GrifMessage> ProcessWhile(Grod grod, ScriptObj script)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Get the condition for an if or while statement.
     /// </summary>
     private static bool GetCondition(Grod grod, ScriptObj script)
     {
@@ -227,7 +235,7 @@ public partial class Dags
         if (answer.Count != 1 || 
             (answer[0].Type != MessageType.Text && answer[0].Type != MessageType.Internal))
         {
-            throw new SystemException($"Invalid condition in {IF_TOKEN}");
+            throw new SystemException("Invalid condition");
         }
         return IsTrue(answer[0].Value);
     }
