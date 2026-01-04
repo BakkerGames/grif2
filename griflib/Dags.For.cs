@@ -59,9 +59,14 @@ public partial class Dags
                 }
                 if (loopScript.ReturnFlag)
                 {
+                    script.ReturnFlag = true;
                     break;
                 }
             } while (loopScript.Index < loopScript.Tokens.Length);
+            if (script.ReturnFlag)
+            {
+                break;
+            }
         }
     }
 
