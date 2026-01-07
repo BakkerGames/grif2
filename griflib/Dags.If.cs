@@ -130,7 +130,7 @@ public partial class Dags
     }
 
     /// <summary>
-    /// Skip over script.Tokens until the matching @endif is found.
+    /// Skip over tokens until the matching @endif is found.
     /// </summary>
     private static void SkipOverEndif(ScriptObj script)
     {
@@ -158,7 +158,7 @@ public partial class Dags
     }
 
     /// <summary>
-    /// Skip over script.Tokens until the matching @then is found.
+    /// Skip over tokens until the matching @then is found.
     /// </summary>
     private static void SkipOverThen(ScriptObj script)
     {
@@ -204,39 +204,5 @@ public partial class Dags
             }
         }
         throw new SystemException(_invalidIfSyntax);
-    }
-
-    /// <summary>
-    /// Process @while ... @do ... @endwhile statement
-    /// </summary>
-    private static List<GrifMessage> ProcessWhile(Grod grod, ScriptObj script)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <summary>
-    /// Get the condition for an if or while statement.
-    /// </summary>
-    private static bool GetCondition(Grod grod, ScriptObj script)
-    {
-        var answer = ProcessOneCommand(grod, script);
-        if (script.ReturnFlag)
-        {
-            if (answer.Count == 1 && answer[0].Type == MessageType.Error)
-            {
-                throw new SystemException(answer[0].Value);
-            }
-            if (answer.Count == 1)
-            {
-                return IsTrue(answer[0].Value);
-            }
-            return false;
-        }
-        if (answer.Count != 1 || 
-            (answer[0].Type != MessageType.Text && answer[0].Type != MessageType.Internal))
-        {
-            throw new SystemException("Invalid condition");
-        }
-        return IsTrue(answer[0].Value);
     }
 }

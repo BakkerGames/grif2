@@ -7,7 +7,7 @@
 		@nl
 		@nl
 		@msg(message.ask_playagain)
-		@set(temp.askflag,true)
+		@set(value.askflag,true)
 		@setoutchannel("#ASK;")
 		@setoutchannel("@script(script.playagain)")
 	@elseif @eq(@get(value.moves),9) @then
@@ -20,14 +20,14 @@
 		@setoutchannel("@script(script.playagain)")
 	@endif
 @checkwin(x,y,z)
-	@set(temp.count,0)
-	@addto(temp.count,@getlist(ttt,$x))
-	@addto(temp.count,@getlist(ttt,$y))
-	@addto(temp.count,@getlist(ttt,$z))
-	@if @eq(@get(temp.count),-3) @then
+	@set(__count,0)
+	@addto(__count,@getlist(ttt,$x))
+	@addto(__count,@getlist(ttt,$y))
+	@addto(__count,@getlist(ttt,$z))
+	@if @eq(@get(__count),-3) @then
 		@set(value.winner,@get(message.x_won))
 		@write(true)
-	@elseif @eq(@get(temp.count),3) @then
+	@elseif @eq(@get(__count),3) @then
 		@set(value.winner,@get(message.o_won))
 		@write(true)
 	@else
@@ -109,7 +109,7 @@ command.quit
 	@quit
 command.restart
 	@msg(message.ask_restart)
-	@set(temp.askflag,true)
+	@set(value.askflag,true)
 	@setoutchannel("#ASK;")
 	@setoutchannel("@script(script.restart)")
 command.restore
@@ -143,52 +143,52 @@ message.x_won
 message.yorn_error
 	Please answer YES or NO.
 script.checksavefile
-	@set(temp.yorn,@getinchannel)
-	@if @true(@get(temp.yorn)) @then
+	@set(__yorn,@getinchannel)
+	@if @true(@get(__yorn)) @then
 		@msg(message.ask_restore)
-		@set(temp.askflag,true)
+		@set(value.askflag,true)
 		@setoutchannel("#ASK;")
 		@setoutchannel("@script(script.restore)")
 	@else
 		@msg(message.savefile_not_found)
 	@endif
 script.playagain
-	@set(temp.yorn,@getinchannel)
-	@if @true(@get(temp.yorn)) @then
+	@set(__yorn,@getinchannel)
+	@if @true(@get(__yorn)) @then
 		@restart
-	@elseif @false(@get(temp.yorn)) @then
+	@elseif @false(@get(__yorn)) @then
 		@quit
 	@else
 		@msg(message.yorn_error)
-		@set(temp.askflag,true)
+		@set(value.askflag,true)
 		@setoutchannel("#ASK;")
 		@setoutchannel("@script(script.playagain)")
 	@endif
 script.restart
-	@set(temp.yorn,@getinchannel)
-	@if @true(@get(temp.yorn)) @then
+	@set(__yorn,@getinchannel)
+	@if @true(@get(__yorn)) @then
 		@restart
-	@elseif @false(@get(temp.yorn)) @then
+	@elseif @false(@get(__yorn)) @then
 		@msg(message.ok)
 		@nl
 		@showboard
 	@else
 		@msg(message.yorn_error)
-		@set(temp.askflag,true)
+		@set(value.askflag,true)
 		@setoutchannel("#ASK;")
 		@setoutchannel("@script(script.restart)")
 	@endif
 script.restore
-	@set(temp.yorn,@getinchannel)
-	@if @true(@get(temp.yorn)) @then
+	@set(__yorn,@getinchannel)
+	@if @true(@get(__yorn)) @then
 		@restore
-	@elseif @false(@get(temp.yorn)) @then
+	@elseif @false(@get(__yorn)) @then
 		@msg(message.ok)
 		@nl
 		@showboard
 	@else
 		@msg(message.yorn_error)
-		@set(temp.askflag,true)
+		@set(value.askflag,true)
 		@setoutchannel("#ASK;")
 		@setoutchannel("@script(script.restore)")
 	@endif
@@ -217,14 +217,14 @@ system.intro
 		@showboard
 	@endif
 system.prompt
-	@if @true(@get(temp.askflag)) @then
-		@set(temp.askflag,null)
+	@if @true(@get(value.askflag)) @then
+		@set(value.askflag,null)
 		@write(@nl,">")
 	@else
 		@write(@nl,@piece(@get(value.player)),"'s turn>")
 	@endif
 system.version
-	2025.11.23
+	2026.01.06
 value.intro
 	false
 value.moves

@@ -819,10 +819,6 @@ public partial class Dags
                     result.Add(new GrifMessage(MessageType.Text, NL_CHAR));
                     break;
                 default:
-                    if (token.Equals("@sleep(", OIC))
-                    {
-                        var sleepParam = p.Count > 0 ? GetNumberValue(p[0].Value) : 0;
-                    }
                     var userResult = GetUserDefinedFunctionValues(grod, script, token, p);
                     result.AddRange(userResult);
                     break;

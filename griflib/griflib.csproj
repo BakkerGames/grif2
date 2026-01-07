@@ -17,7 +17,7 @@
 Contains classes to develop and play interactive fiction and other game types.
 Includes IFGame, IFParser, DAGS, GROD, and IO classes.</Description>
     <AssemblyName>griflib</AssemblyName>
-    <Version>2.2026.0104</Version>
+    <Version>2.2026.01.06</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
