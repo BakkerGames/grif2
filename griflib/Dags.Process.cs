@@ -56,13 +56,18 @@ public partial class Dags
                         script.Index = script.Tokens.Length;
                         script.ReturnFlag = true; // End processing
                         break;
+                    case WHILE_TOKEN:
+                        result.AddRange(ProcessWhile(grod, script));
+                        break;
                     case AND_TOKEN:
+                    case DO_TOKEN:
                     case ELSEIF_TOKEN:
                     case ELSE_TOKEN:
                     case ENDFOREACHKEY_TOKEN:
                     case ENDFOREACHLIST_TOKEN:
                     case ENDFOR_TOKEN:
                     case ENDIF_TOKEN:
+                    case ENDWHILE_TOKEN:
                     case NOT_TOKEN:
                     case OR_TOKEN:
                     case THEN_TOKEN:
@@ -814,10 +819,6 @@ public partial class Dags
                     result.Add(new GrifMessage(MessageType.Text, NL_CHAR));
                     break;
                 default:
-                    if (token.Equals("@sleep(", OIC))
-                    {
-                        var sleepParam = p.Count > 0 ? GetNumberValue(p[0].Value) : 0;
-                    }
                     var userResult = GetUserDefinedFunctionValues(grod, script, token, p);
                     result.AddRange(userResult);
                     break;

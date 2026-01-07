@@ -48,7 +48,8 @@ public partial class Dags
             ScriptObj loopScript = new()
             {
                 Tokens = [.. loopTokens],
-                Index = 0
+                Index = 0,
+                LocalData = script.LocalData,
             };
             do
             {
@@ -59,9 +60,14 @@ public partial class Dags
                 }
                 if (loopScript.ReturnFlag)
                 {
+                    script.ReturnFlag = true;
                     break;
                 }
             } while (loopScript.Index < loopScript.Tokens.Length);
+            if (script.ReturnFlag)
+            {
+                break;
+            }
         }
     }
 
@@ -101,11 +107,26 @@ public partial class Dags
             if (p.Count > 2)
             {
                 if (!value.EndsWith(p[2].Value, OIC))
+                {
                     continue;
+                }
                 value = value[..^p[2].Value.Length];
             }
-            var newScript = newTokens.ToString().Replace($"${p[0].Value}", value);
-            result.AddRange(Process(grod, newScript));
+            var loopText = newTokens.ToString().Replace($"${p[0].Value}", value);
+            var loopScript = CreateScript(loopText);
+            loopScript.LocalData = script.LocalData;
+            do
+            {
+                var answer = ProcessOneCommand(grod, loopScript);
+                if (answer.Count > 0)
+                {
+                    result.AddRange(answer);
+                }
+                if (loopScript.ReturnFlag)
+                {
+                    break;
+                }
+            } while (loopScript.Index < loopScript.Tokens.Length);
         }
     }
 
@@ -148,8 +169,21 @@ public partial class Dags
                 var value2 = FixListItemOut(value);
                 if (!string.IsNullOrEmpty(value2))
                 {
-                    var newScript = newTokens.ToString().Replace($"${p[0].Value}", value2);
-                    result.AddRange(Process(grod, newScript));
+                    var loopText = newTokens.ToString().Replace($"${p[0].Value}", value2);
+                    var loopScript = CreateScript(loopText);
+                    loopScript.LocalData = script.LocalData;
+                    do
+                    {
+                        var answer = ProcessOneCommand(grod, loopScript);
+                        if (answer.Count > 0)
+                        {
+                            result.AddRange(answer);
+                        }
+                        if (loopScript.ReturnFlag)
+                        {
+                            break;
+                        }
+                    } while (loopScript.Index < loopScript.Tokens.Length);
                 }
             }
         }

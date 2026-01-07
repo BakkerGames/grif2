@@ -302,3 +302,10 @@
 2025-12-30
 - New ScriptObj to hold both tokens and index.
 - Changed all commands to use ScriptObj instead of string list and index.
+- ScriptObj has own Grod for local values. Keys starting with "__" are local.
+
+2026-01-06
+- Testing local storage, @return.
+- Use local values in Cloak of Darkness and Tic-tac-toe.
+- Fixed save format to JSON for saving to a named file.
+- Added @while ... @do ... @endwhile commands.

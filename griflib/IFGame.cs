@@ -317,7 +317,7 @@ public class IFGame
             }
             var savefile = Path.Combine(_saveBasePath, message.ExtraValue + SAVE_EXTENSION);
             var itemList = _overlayGrod.Items(false, true);
-            WriteGrif(savefile, itemList, false);
+            WriteGrif(savefile, itemList, true);
             return;
         }
         if (message.Value.Equals(OUTCHANNEL_RESTORE, OIC))

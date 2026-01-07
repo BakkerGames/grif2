@@ -3,11 +3,11 @@
 	@if @ne($x,0) @then
 		@addto(value.score,$x)
 		@if @eq($x,1) @then
-			@set(temp.s,"")
+			@set(__s,"")
 		@else
-			@set(temp.s,"s")
+			@set(__s,"s")
 		@endif
-		@write(@format(@get(message.scoreup),$x,@get(temp.s)))
+		@write(@format(@get(message.scoreup),$x,@get(__s)))
 		@nl
 	@endif
 @carry(x)
@@ -26,13 +26,13 @@
 	@endif
 @godir(x)
 	@debug(@concat("going to room.",@room,".exit.",$x))
-	@set(temp.key,@concat("room.",@room,".exit.",$x))
-	@if @not @exists(@get(temp.key)) @then
+	@set(__key,@concat("room.",@room,".exit.",$x))
+	@if @not @exists(@get(__key)) @then
 		@msg(message.cant_go)
-	@elseif @isscript(@get(temp.key)) @then
-		@script(@get(temp.key))
+	@elseif @isscript(@get(__key)) @then
+		@script(@get(__key))
 	@else
-		@goto(@get(@get(temp.key)))
+		@goto(@get(@get(__key)))
 	@endif
 @goto(x)
 	@debug("goto $x")
@@ -55,13 +55,13 @@
 		@write(false)
 	@endif
 @herechild(x)
-	@set(temp.here,false)
+	@set(__here,false)
 	@foreachkey(y,"item.",".location")
 		@if @eq(@getvalue(item.$y.location),@room) @and @eq(@getvalue(item.$x.location),$y) @then
-			@set(temp.here,true)
+			@set(__here,true)
 		@endif
 	@endforeachkey
-	@write(@get(temp.here))
+	@write(@get(__here))
 @inv
 	inventory
 @isroom(x)
@@ -167,17 +167,17 @@ command.hang.cloak.on.hook
 command.help
 	@msg(message.help)
 command.inventory
-	@set(temp.count,0)
+	@set(__count,0)
 	@foreachkey(x,"item.",".location")
 		@if @carry($x) @then
-			@if @eq(@get(temp.count),0) @then
+			@if @eq(@get(__count),0) @then
 				@msg(message.carrying)
 			@endif
-			@addto(temp.count,1)
+			@addto(__count,1)
 			@msg(item.$x.shortdesc)
 		@endif
 	@endforeachkey
-	@if @eq(@get(temp.count),0) @then
+	@if @eq(@get(__count),0) @then
 		@msg(message.inv_empty)
 	@endif
 command.look
@@ -249,21 +249,21 @@ command.restore
 command.restore.?
 	@msg(message.invalid_save_slot)
 command.restore.#
-	@set(temp.slot,@get(input.nounword))
-	@if @isnumber(@get(temp.slot)) @and @ge(@get(temp.slot),1) @and @le(@get(temp.slot),5) @then
+	@set(value.slot,@get(input.nounword))
+	@if @isnumber(@get(value.slot)) @and @ge(@get(value.slot),1) @and @le(@get(value.slot),5) @then
 		@script(script.restore_slot_check)
 	@else
 		@msg(message.invalid_save_slot)
-		@set(temp.slot,null)
+		@set(value.slot,null)
 	@endif
 command.save
 	@msg(message.save_slot_number)
 	@setoutchannel("#ASK;")
 	@setoutchannel("@script(script.save_slot)")
 command.save.#
-	@set(temp.slot,@get(input.nounword))
-	@if @isnumber(@get(temp.slot)) @and @ge(@get(temp.slot),1) @and @le(@get(temp.slot),5) @then
-		@setoutchannel("#SAVENAME;",@get(temp.slot))
+	@set(value.slot,@get(input.nounword))
+	@if @isnumber(@get(value.slot)) @and @ge(@get(value.slot),1) @and @le(@get(value.slot),5) @then
+		@setoutchannel("#SAVENAME;",@get(value.slot))
 		@setoutchannel("@msg(message.save_complete)")
 	@else
 		@msg(message.save_slot_number)
@@ -507,12 +507,12 @@ script.bar_cant_go
 		@msg(message.cant_go)
 	@endif
 script.restart
-	@set(temp.yorn,@getinchannel)
-	@if @true(@get(temp.yorn)) @then
+	@set(__yorn,@getinchannel)
+	@if @true(@get(__yorn)) @then
 		@setoutchannel("#RESTART;")
 		@setoutchannel("@msg(message.restarting) @nl")
 		@setoutchannel("@script(system.intro)")
-	@elseif @false(@get(temp.yorn)) @then
+	@elseif @false(@get(__yorn)) @then
 		@msg(message.ok)
 	@else
 		@msg(message.yorn_error)
@@ -520,44 +520,42 @@ script.restart
 		@setoutchannel("@script(script.restart))")
 	@endif
 script.restore_slot
-	@comment("temp.slot already has a valid value")
-	@set(temp.yorn,@getinchannel)
-	@if @true(@get(temp.yorn)) @then
-		@setoutchannel("#RESTORENAME;",@get(temp.slot))
+	@comment("value.slot already has a valid value")
+	@set(__yorn,@getinchannel)
+	@if @true(@get(__yorn)) @then
+		@setoutchannel("#RESTORENAME;",@get(value.slot))
 		@setoutchannel("@msg(message.restore_complete) @nl")
 		@setoutchannel("@lookfull")
 	@else
 		@msg(message.ok)
-		@set(temp.slot,null)
+		@set(value.slot,null)
 	@endif
 script.restore_slot_check
-	@comment("temp.slot already has slot number")
-	@if @isnumber(@get(temp.slot)) @and @ge(@get(temp.slot),1) @and @le(@get(temp.slot),5) @then
-		@setoutchannel("#EXISTSNAME;",@get(temp.slot))
+	@comment("value.slot already has slot number")
+	@if @isnumber(@get(value.slot)) @and @ge(@get(value.slot),1) @and @le(@get(value.slot),5) @then
+		@setoutchannel("#EXISTSNAME;",@get(value.slot))
 		@setoutchannel("@script(script.restore_slot_check_file)")
 	@else
 		@msg(message.invalid_save_slot)
-		@set(temp.slot,null)
+		@set(value.slot,null)
 	@endif
 script.restore_slot_check_file
-	@set(temp.exists,@getinchannel)
-	@if @true(@get(temp.exists)) @then
-		@set(temp.exists,null)
+	@set(__exists,@getinchannel)
+	@if @true(@get(__exists)) @then
 		@msg(message.askrestore)
 		@setoutchannel("#ASK;")
 		@setoutchannel("@script(script.restore_slot)")
 	@else
-		@set(temp.exists,null)
-		@set(temp.slot,null)
+		@set(value.slot,null)
 		@msg(message.savefile_not_found)
 	@endif
 script.restore_slot_get
-	@set(temp.slot,@getinchannel)
+	@set(value.slot,@getinchannel)
 	@script(script.restore_slot_check)
 script.save_slot
-	@set(temp.slot,@getinchannel)
-	@if @isnumber(@get(temp.slot)) @and @ge(@get(temp.slot),1) @and @le(@get(temp.slot),5) @then
-		@setoutchannel("#SAVENAME;",@get(temp.slot))
+	@set(value.slot,@getinchannel)
+	@if @isnumber(@get(value.slot)) @and @ge(@get(value.slot),1) @and @le(@get(value.slot),5) @then
+		@setoutchannel("#SAVENAME;",@get(value.slot))
 		@setoutchannel("@msg(message.save_complete)")
 	@else
 		@msg(message.save_slot_number)
@@ -594,7 +592,7 @@ system.output_width
 system.prompt
 	\n>
 system.version
-	2025.12.26
+	2026.01.06
 value.cloakscore
 	1
 value.maxscore
