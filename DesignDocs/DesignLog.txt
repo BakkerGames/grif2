@@ -309,3 +309,7 @@
 - Use local values in Cloak of Darkness and Tic-tac-toe.
 - Fixed save format to JSON for saving to a named file.
 - Added @while ... @do ... @endwhile commands.
+
+2026-01-13
+- Added @getchar() and @setchar().
+- Added @inlist().

@@ -13,6 +13,7 @@ public partial class Dags
         List<GrifMessage> result = [];
         string? value;
         long long1, long2;
+        int int1;
         long longAnswer;
         bool boolAnswer;
         bool isNull0;
@@ -391,6 +392,20 @@ public partial class Dags
                     }
                     result.Add(new GrifMessage(MessageType.Internal, longAnswer.ToString()));
                     break;
+                case GETCHAR_TOKEN:
+                    CheckParameterCount(p, 2);
+                    int1 = (int)GetNumberValue(p[1].Value);
+                    if (int1 < 0)
+                    {
+                        throw new SystemException("Index out of range");
+                    }
+                    if (int1 > p[0].Value.Length)
+                    {
+                        result.Add(new GrifMessage(MessageType.Internal, " "));
+                    }
+                    value = p[0].Value.Substring(int1, 1);
+                    result.Add(new GrifMessage(MessageType.Internal, value));
+                    break;
                 case GETLIST_TOKEN:
                     CheckParameterCount(p, 2);
                     if (string.IsNullOrWhiteSpace(p[0].Value))
@@ -436,6 +451,17 @@ public partial class Dags
                     {
                         result.Add(new GrifMessage(MessageType.Internal,
                             TrueFalse(string.Compare(p[0].Value, p[1].Value, OIC) > 0)));
+                    }
+                    break;
+                case INLIST_TOKEN:
+                    CheckParameterCount(p, 2);
+                    if (InList(grod, script, p[0].Value, p[1].Value))
+                    {
+                        result.Add(new GrifMessage(MessageType.Internal, TRUE));
+                    }
+                    else
+                    {
+                        result.Add(new GrifMessage(MessageType.Internal, FALSE));
                     }
                     break;
                 case INSERTATLIST_TOKEN:
@@ -712,6 +738,32 @@ public partial class Dags
                     }
                     longAnswer = long1 | (long)Math.Pow(2, long2);
                     result.Add(new GrifMessage(MessageType.Internal, longAnswer.ToString()));
+                    break;
+                case SETCHAR_TOKEN:
+                    CheckParameterCount(p, 3);
+                    int1 = (int)GetNumberValue(p[1].Value);
+                    if (int1 < 0)
+                    {
+                        throw new SystemException("Index out of range");
+                    }
+                    if (p[2].Value == null || p[2].Value == NULL || p[2].Value.Length < 1)
+                    {
+                        throw new SystemException("Character not supplied");
+                    }
+                    value = p[0].Value;
+                    if (int1 == value.Length)
+                    {
+                        value += p[2].Value[0];
+                    }
+                    else if (int1 > value.Length)
+                    {
+                        value += new string(' ', int1 - value.Length - 1) + p[2].Value[0];
+                    }
+                    else
+                    {
+                        value = value[..int1] + p[2].Value[0] + value[(int1 + 1)..];
+                    }
+                    result.Add(new GrifMessage(MessageType.Internal, value));
                     break;
                 case SETLIST_TOKEN:
                     CheckParameterCount(p, 3);

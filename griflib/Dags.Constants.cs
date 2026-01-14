@@ -40,6 +40,7 @@ public partial class Dags
     public const string FROMHEX_TOKEN = "@fromhex(";
     public const string GETARRAY_TOKEN = "@getarray(";
     public const string GETBIT_TOKEN = "@getbit(";
+    public const string GETCHAR_TOKEN = "@getchar(";
     public const string GETINCHANNEL_TOKEN = "@getinchannel";
     public const string GETLIST_TOKEN = "@getlist(";
     public const string GETVALUE_TOKEN = "@getvalue(";
@@ -48,6 +49,7 @@ public partial class Dags
     public const string GOLABEL_TOKEN = "@golabel(";
     public const string GT_TOKEN = "@gt(";
     public const string IF_TOKEN = "@if";
+    public const string INLIST_TOKEN = "@inlist(";
     public const string INSERTATLIST_TOKEN = "@insertatlist(";
     public const string ISBOOL_TOKEN = "@isbool(";
     public const string ISFALSE2_TOKEN = "@false(";
@@ -85,6 +87,7 @@ public partial class Dags
     public const string SCRIPT_TOKEN = "@script(";
     public const string SETARRAY_TOKEN = "@setarray(";
     public const string SETBIT_TOKEN = "@setbit(";
+    public const string SETCHAR_TOKEN = "@setchar(";
     public const string SETLIST_TOKEN = "@setlist(";
     public const string SETOUTCHANNEL_TOKEN = "@setoutchannel(";
     public const string SET_TOKEN = "@set(";

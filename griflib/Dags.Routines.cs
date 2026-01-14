@@ -837,6 +837,32 @@ public partial class Dags
         SetGlobalOrLocal(grod, script, key, string.Join(',', items));
     }
 
+    private static bool InList(Grod grod, ScriptObj script, string key, string? value)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new SystemException("Key cannot be null or empty.");
+        }
+        if (value == null || value.Equals(NULL, OIC))
+        {
+            return false;
+        }
+        var list = GetGlobalOrLocal(grod, script, key, true);
+        if (string.IsNullOrWhiteSpace(list) || IsNull(list))
+        {
+            return false;
+        }
+        var items = SplitList(list).ToList();
+        foreach (var item in items)
+        {
+            if (item.Equals(value, OIC))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /// <summary>
     /// Insert an item at a specific script.Index in a comma-delimited list in the Grod.
     /// </summary>

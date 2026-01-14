@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Version>2.2026.1.13</Version>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -12,12 +13,11 @@
     <PackageOutputPath>..\NuGet\</PackageOutputPath>
     <PackageProjectUrl>https://github.com/BakkerGames/GRIF2</PackageProjectUrl>
     <RepositoryUrl>https://github.com/BakkerGames/GRIF2</RepositoryUrl>
-    <Title>GrifLib - Game Runner for Interactive Fiction Library</Title>
-    <Description>Game Runner for Interactive Fiction Library
+    <Title>GrifLib - Game Runner for Interactive Fiction Class Library</Title>
+    <Description>Game Runner for Interactive Fiction Class Library
 Contains classes to develop and play interactive fiction and other game types.
 Includes IFGame, IFParser, DAGS, GROD, and IO classes.</Description>
     <AssemblyName>griflib</AssemblyName>
-    <Version>2.2026.01.06</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
