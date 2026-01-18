@@ -1,2 +1,3 @@
 @echo off
-xcopy /d *.nupkg %USERPROFILE%\EXE\NuGet
+xcopy /d /y *.nupkg %USERPROFILE%\EXE\NuGet
+pause

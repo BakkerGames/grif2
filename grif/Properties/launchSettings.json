@@ -38,6 +38,11 @@
       "commandName": "Project",
       "commandLineArgs": "\"..\\aoc2025\\03\\03_1.grif\" -i \"..\\aoc2025\\03\\03_test.txt\" -i \"..\\aoc2025\\03\\end.txt\"",
       "workingDirectory": ".."
+    },
+    "Crowther Adventure": {
+      "commandName": "Project",
+      "commandLineArgs": "\"..\\CrowtherToGRIF\\AdvCrowther\"",
+      "workingDirectory": ".."
     }
   }
 }
