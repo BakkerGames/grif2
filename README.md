@@ -30,3 +30,6 @@ GRIF can be integrated into other applications to provide game support such as s
 - Many new built-in script functions
 - Self-contained GrifLib project (soon to be available as a NuGet package)
 - GrifLib can be included in other front-end applications
+- Optional IFGame and IFParser classes for interactive fiction game management
+- IFGame provides Input and Output event stacks for external handling
+- Improved IFParser with better adjective and preposition support
