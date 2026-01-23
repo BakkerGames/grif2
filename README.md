@@ -17,7 +17,7 @@ GRIF can be integrated into other applications to provide game support such as s
 - Supports localization to other languages using modification files
 - Runs on Windows, Linux, and macOS
 
-## Improvements over Version 1
+## Improvements in Version 2
 
 - Can return interleaved results including media information
 - Can handle system events such as sleep
@@ -25,6 +25,8 @@ GRIF can be integrated into other applications to provide game support such as s
 - Outchannel support can be customized for different output methods
 - Handles 64-bit integers for larger data values
 - Scripts can have local variables for internal processing
-- @return command exits scripts immediately
+- @while ... @do ... @endwhile loop structure
+- @return command allows exiting scripts immediately
+- Many new built-in script functions
 - Self-contained GrifLib project (soon to be available as a NuGet package)
 - GrifLib can be included in other front-end applications
