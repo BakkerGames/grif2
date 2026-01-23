@@ -241,7 +241,7 @@ public class IFGame
                 HandleOutChannel(message);
                 break;
             case MessageType.Script:
-                var outputItems = Dags.ProcessItems(_overlayGrod, [message]);
+                var outputItems = ProcessItems(_overlayGrod, [message]);
                 foreach (var item in outputItems)
                 {
                     OutputMessages.Enqueue(item);
@@ -265,7 +265,7 @@ public class IFGame
         foreach (var key in keys)
         {
             var script = $"{SCRIPT_TOKEN}{key})";
-            var items = Dags.Process(_overlayGrod, script);
+            var items = Process(_overlayGrod, script);
             foreach (var item in items)
             {
                 OutputMessages.Enqueue(item);

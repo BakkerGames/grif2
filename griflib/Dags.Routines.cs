@@ -540,6 +540,11 @@ public partial class Dags
                 parameters.Add(new GrifMessage(MessageType.Internal, TrimQuotes(token)));
                 script.Index++;
             }
+            if (parameters.Any(x => x.Type == MessageType.Error))
+            {
+                script.Index = script.Tokens.Length; // Stop processing on error
+                return [.. parameters.Where(x => x.Type == MessageType.Error)];
+            }
             if (script.Index < script.Tokens.Length)
             {
                 if (script.Tokens[script.Index] == ")")

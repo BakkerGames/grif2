@@ -313,3 +313,10 @@
 2026-01-13
 - Added @getchar() and @setchar().
 - Added @inlist().
+
+2026-01-22
+- Testing @getchar() and @setchar().
+- Fixing many error return value issues in tests.
+- Added error checking on parameters and in Process.
+- Removed unnecessary "Dags." prefixes.
+- Dags.md documentation file updated.

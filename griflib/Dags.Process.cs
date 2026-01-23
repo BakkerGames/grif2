@@ -86,6 +86,12 @@ public partial class Dags
                 return result;
             }
             var p = GetParameters(grod, script);
+            if (p.Any(x => x.Type == MessageType.Error))
+            {
+                script.Index = script.Tokens.Length;
+                result.AddRange(p.Where(x => x.Type == MessageType.Error));
+                return result;
+            }
             switch (token.ToLower())
             {
                 case ABS_TOKEN:
@@ -399,12 +405,15 @@ public partial class Dags
                     {
                         throw new SystemException("Index out of range");
                     }
-                    if (int1 > p[0].Value.Length)
+                    if (int1 >= p[0].Value.Length)
                     {
                         result.Add(new GrifMessage(MessageType.Internal, " "));
                     }
-                    value = p[0].Value.Substring(int1, 1);
-                    result.Add(new GrifMessage(MessageType.Internal, value));
+                    else
+                    {
+                        value = p[0].Value.Substring(int1, 1);
+                        result.Add(new GrifMessage(MessageType.Internal, value));
+                    }
                     break;
                 case GETLIST_TOKEN:
                     CheckParameterCount(p, 2);
@@ -880,20 +889,18 @@ public partial class Dags
         catch (Exception ex)
         {
             // Handle exceptions and return error item
-            StringBuilder error = new();
-            error.Append($"Error processing command at index {script.Index}: ");
-            error.AppendLine(ex.Message);
+            var error = $"Error processing command at index {script.Index}: {ex.Message}";
             var extraInfo = new StringBuilder();
             for (int i = 0; i < script.Tokens.Length; i++)
             {
                 var token = script.Tokens[i];
                 if (token.Length > 50)
                 {
-                    token = string.Concat(token.AsSpan(0, 50), "...");
+                    token = string.Concat(token.AsSpan(0, 47), "...");
                 }
                 extraInfo.AppendLine($"{i}: {token}");
             }
-            result.Add(new GrifMessage(MessageType.Error, error.ToString(), extraInfo.ToString()));
+            result.Add(new GrifMessage(MessageType.Error, error, extraInfo.ToString()));
             return result;
         }
     }
