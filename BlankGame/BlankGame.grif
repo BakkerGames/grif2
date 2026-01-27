@@ -36,7 +36,7 @@ adjective.red
 command.drop.*
 	@if @eq(@get(@concat("item.",@get(input.noun),".location")),@inv) @then
 		@set(@concat("item.",@get(input.noun),".location"),@room)
-		@write(@get(message.drop_one)," ")
+		@write(@get(message.drop_one))
 		@write(@get(@concat("item.",@get(input.noun),".shortdesc")))
 		@writeline(".")
 	@else
@@ -113,6 +113,8 @@ command.put.*.in.*
 		@writeline(@get(input.indirectnounword),": ",@get(message.not_here))
 	@elseif @false(@get(@concat("item.",@get(input.indirectnoun),".container"))) @then
 		@msg(message.cant_do_that)
+	@elseif @eq(@get(input.noun),@get(input.indirectnoun)) @then
+		@msg(message.cant_do_that)
 	@else
 		@set(@concat("item.",@get(input.noun),".location"),@get(input.indirectnoun))
 		@msg(message.done)
@@ -143,7 +145,7 @@ command.take.*
 		@msg(message.already_carrying)
 	@elseif @eq(@get(@concat("item.",@get(input.noun),".location")),@room) @then
 		@set(@concat("item.",@get(input.noun),".location"),@inv)
-		@write(@get(message.take_one)," ")
+		@write(@get(message.take_one))
 		@write(@get(@concat("item.",@get(input.noun),".shortdesc")))
 		@writeline(".")
 	@else
@@ -227,7 +229,7 @@ message.done
 message.dropping
 	You drop:
 message.drop_one
-	You drop
+	You drop\s
 message.gameover
 	Thanks for playing!
 message.help
@@ -251,7 +253,7 @@ message.restore_complete
 message.save_complete
 	Save complete.
 message.take_one
-	You take
+	You take\s
 message.taking
 	You pick up:
 message.you_see_here

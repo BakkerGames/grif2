@@ -373,6 +373,7 @@ internal class Program
         }
         List<string> result = [];
         StringBuilder currentLine = new();
+        // TODO ### this needs better spaces handling
         var words = text.Split(' ');
         foreach (var word in words)
         {
