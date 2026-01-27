@@ -46,7 +46,7 @@
     },
     "BlankGame": {
       "commandName": "Project",
-      "commandLineArgs": "\"BlankGame\\BlankGame.grif\"",
+      "commandLineArgs": "\"BlankGame\\BlankGame\"",
       "workingDirectory": ".."
     }
   }

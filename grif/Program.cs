@@ -17,7 +17,7 @@ internal class Program
     private static string tabChars = "    ";
     private static bool uppercaseInput = false;
 
-    private static List<string> inputFilenames = [];
+    private static readonly List<string> inputFilenames = [];
     private static string? splitInput;
     private static string? outputFilename;
 
@@ -301,7 +301,6 @@ internal class Program
             OutputText(NL_CHAR);
             OutputText("### ERROR: ");
             OutputText(e.Value);
-            //OutputText(e.ExtraValue ?? "");
             return;
         }
         if (e.Value.Equals(OUTCHANNEL_SLEEP, OIC))
@@ -354,9 +353,12 @@ internal class Program
                 Console.WriteLine(line);
                 OutputTextLog(line + Environment.NewLine);
             }
-            var lastLine = lines[lines.Count - 1];
-            Console.Write(lastLine);
-            OutputTextLog(lastLine);
+            if (lines.Count > 0)
+            {
+                var lastLine = lines[^1];
+                Console.Write(lastLine);
+                OutputTextLog(lastLine);
+            }
         }
     }
 

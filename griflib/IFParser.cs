@@ -427,7 +427,7 @@ public static class IFParser
         {
             foreach (var article in item.Values)
             {
-                if (words[0].Equals(article, OIC))
+                if (words.Count > 0 && words[0].Equals(article, OIC))
                 {
                     words.RemoveAt(0);
                     break;

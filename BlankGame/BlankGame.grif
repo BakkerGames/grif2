@@ -231,7 +231,7 @@ message.drop_one
 message.gameover
 	Thanks for playing!
 message.help
-	This is a very simple game. It knows a few verbs:\n\tlook, inventory, take, drop, quit\n\nIt knows a few nouns:\n\tbox, ball\n\nThe ball has the adjective "red", so you can "take red ball".\n\nThe box has the adjective "blue", so you can "drop blue box".\n\nYou can also use "the" and "a" when talking about the ball or the box.\n\nThe noun "all" can be used with "take" or "drop", as in "take all".\n\nThere are four directions and two rooms to move between:\n\tnorth (or n)\n\tsouth (or s)\n\teast (or e)\n\twest (or w)\n\nThere are some extra commands for handling the game itself:\n\tsave, restore, restart\n\nHave fun!
+	This is a very simple game. It knows a few verbs:\n\tlook, inventory, take, drop, put\n\nIt knows a few nouns:\n\tbox, ball\n\nThere are four directions and two rooms to move between:\n\tnorth (or n)\n\tsouth (or s)\n\teast (or e)\n\twest (or w)\n\nThere are some extra commands for handling the game itself:\n\tsave, restore, restart, quit\n\nThe ball has the adjective "red", so you can "take red ball".\n\nThe box has the adjective "blue", so you can "drop blue box".\n\nYou can use "the" and "a" when talking about the ball or the box.\n\nThe noun "all" can be used with "take" or "drop", as in "take all".\n\nThe box is a container, so you can "put the red ball in the blue box".\n\nHave fun!
 message.intro
 	This is a starting blank game file. It has two rooms, a blue box, a red ball, and you. It also contains all the scripts and starting values to make this simple game work.
 message.inv_empty
@@ -265,7 +265,7 @@ noun.box
 player.location
 	1
 preposition.in
-	in,into
+	in,into,within,inside
 room.1.exit.north
 	2
 room.1.longdesc

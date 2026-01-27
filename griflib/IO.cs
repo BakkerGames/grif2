@@ -56,7 +56,11 @@ public static class IO
             }
             return baseGrod;
         }
-        else if (!File.Exists(filename))
+        if (!Path.HasExtension(filename))
+        {
+            filename += DATA_EXTENSION;
+        }
+        if (!File.Exists(filename))
         {
             throw new FileNotFoundException("The specified file does not exist.", filename);
         }
