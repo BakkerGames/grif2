@@ -43,6 +43,11 @@
       "commandName": "Project",
       "commandLineArgs": "\"..\\CrowtherToGRIF\\AdvCrowther\"",
       "workingDirectory": ".."
+    },
+    "BlankGame": {
+      "commandName": "Project",
+      "commandLineArgs": "\"BlankGame\\BlankGame.grif\"",
+      "workingDirectory": ".."
     }
   }
 }

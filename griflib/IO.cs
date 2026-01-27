@@ -196,6 +196,10 @@ public static class IO
             else
             {
                 value = item.Value ?? NULL;
+                if (value.Contains('\r') || value.Contains('\n'))
+                {
+                    value = value.Replace("\r", "").Replace("\n", NL_CHAR);
+                }
                 if (jsonFormat)
                 {
                     writer.Write(Encoding.UTF8.GetBytes(" \""));

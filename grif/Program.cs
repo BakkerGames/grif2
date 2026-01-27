@@ -14,6 +14,7 @@ internal class Program
 
     private static int outputCount = 0;
     private static int maxOutputWidth = 0;
+    private static string tabChars = "    ";
     private static bool uppercaseInput = false;
 
     private static List<string> inputFilenames = [];
@@ -85,6 +86,10 @@ internal class Program
         }
         // get settings
         maxOutputWidth = (int)(baseGrod.GetNumber(OUTPUT_WIDTH, true) ?? 0);
+        if ((baseGrod.GetNumber(OUTPUT_TAB_LENGTH, true) ?? 0) > 0)
+        {
+            tabChars = new string(' ', (int)(baseGrod.GetNumber(OUTPUT_TAB_LENGTH, true) ?? 4));
+        }
         uppercaseInput = baseGrod.GetBool(UPPERCASE, true) ?? false;
         // start game loop
         game.InputEvent += Input;
@@ -315,13 +320,21 @@ internal class Program
     /// </summary>
     private static void OutputText(string text)
     {
-        if (text.Contains("\\s"))
+        if (text.Contains(SPACE_CHAR))
         {
-            text = text.Replace("\\s", " ");
+            text = text.Replace(SPACE_CHAR, " ");
         }
-        while (text.Contains("\\n"))
+        if (text.Contains('\r') || text.Contains('\n'))
         {
-            var index = text.IndexOf("\\n");
+            text = text.Replace("\r", "").Replace("\n", NL_CHAR);
+        }
+        if (text.Contains(TAB_CHAR) || text.Contains('\t'))
+        {
+            text = text.Replace(TAB_CHAR, tabChars).Replace("\t", tabChars);
+        }
+        while (text.Contains(NL_CHAR))
+        {
+            var index = text.IndexOf(NL_CHAR);
             var before = text[..index];
             text = text[(index + 2)..];
             var lines = Wordwrap(before);
@@ -341,7 +354,7 @@ internal class Program
                 Console.WriteLine(line);
                 OutputTextLog(line + Environment.NewLine);
             }
-            var lastLine = lines[^1];
+            var lastLine = lines[lines.Count - 1];
             Console.Write(lastLine);
             OutputTextLog(lastLine);
         }
@@ -352,7 +365,7 @@ internal class Program
     /// </summary>
     private static List<string> Wordwrap(string text)
     {
-        if (maxOutputWidth <= 0 || string.IsNullOrEmpty(text))
+        if (maxOutputWidth <= 0 || string.IsNullOrEmpty(text) || outputCount + text.Length <= maxOutputWidth)
         {
             return [text];
         }

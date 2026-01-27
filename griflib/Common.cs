@@ -5,7 +5,7 @@ public static partial class Common
     /// <summary>
     /// Gets the current version of the library.
     /// </summary>
-    public static string Version { get { return "2.2026.1.22"; } }
+    public static string Version { get { return "2.2026.1.26"; } }
 
     /// <summary>
     /// String comparison: OrdinalIgnoreCase
@@ -40,6 +40,7 @@ public static partial class Common
     public const string GAMETITLE = "system.gametitle";
     public const string GAMEOVER = "system.gameover";
     public const string INTRO = "system.intro";
+    public const string OUTPUT_TAB_LENGTH = "system.tab_length";
     public const string OUTPUT_WIDTH = "system.output_width";
     public const string PROMPT = "system.prompt";
     public const string UPPERCASE = "system.uppercase";

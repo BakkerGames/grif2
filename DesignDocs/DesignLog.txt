@@ -320,3 +320,8 @@
 - Added error checking on parameters and in Process.
 - Removed unnecessary "Dags." prefixes.
 - Dags.md documentation file updated.
+
+2026-01-26
+- Added checking for '\r' and '\n' in GetGrifStream().
+- Added checking for '\t' in OutputText().
+- Added BlankGame as a starting point in creating a new game file.
