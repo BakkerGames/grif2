@@ -152,29 +152,25 @@ public class IFGame
                 break;
             }
             AdvanceGameState();
-            while (OutputMessages.Count > 0)
+            while (!GameOver && OutputMessages.Count > 0)
             {
                 var outputMessage = OutputMessages.Dequeue();
                 ProcessOutputMessage(outputMessage);
             }
-            if (GameOver)
-            {
-                break;
-            }
-            if (InputEvent != null && InputMessages.Count == 0)
+            if (!GameOver && InputEvent != null && InputMessages.Count == 0)
             {
                 InputEvent?.Invoke(this);
             }
-            while (InputMessages.Count == 0)
+            while (!GameOver && InputMessages.Count == 0)
             {
                 await Task.Delay(100);
             }
-            if (InputMessages.Count > 0)
+            if (!GameOver && InputMessages.Count > 0)
             {
                 var inputMessage = InputMessages.Dequeue();
                 ProcessInputMessage(inputMessage);
             }
-            while (OutputMessages.Count > 0)
+            while (!GameOver && OutputMessages.Count > 0)
             {
                 var outputMessage = OutputMessages.Dequeue();
                 ProcessOutputMessage(outputMessage);
