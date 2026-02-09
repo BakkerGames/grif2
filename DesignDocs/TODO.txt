@@ -10,7 +10,7 @@ Command-line parameter for pausing at end of game.
 @getchar(value,index)
 
 ParseInput should check if ParseInit has been run
-Fix wordwrap to be smarter, as routine in IFGame, don't dupe code in Ide.
+* Fix wordwrap to be smarter, as routine in IFGame, don't dupe code in Ide.
 Help
 Float Play
 Debug window
@@ -24,7 +24,7 @@ Undo and again
 Rename rooms and items
 Validate option for scripts
 Ide config dialog
-Is there still a problem with leading spaces In scripts?
+Is there still a problem with leading spaces in scripts?
 Wrap line at @and and @or
 Aoc, while loop for next char
 Ide pick command from list, context menu?

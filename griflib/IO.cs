@@ -241,6 +241,47 @@ public static class IO
         return writer;
     }
 
+    /// <summary>
+    /// Wordwrap text according to maxOutputWidth.
+    /// currLinePos is the count of chars on the line so far, zero for start of line.
+    /// Add a newline after each line except the last.
+    /// </summary>
+    public static List<string> Wordwrap(string text, int currLinePos, int maxOutputWidth)
+    {
+        if (maxOutputWidth <= 0 ||
+            string.IsNullOrEmpty(text) ||
+            text.Length <= maxOutputWidth - currLinePos)
+        {
+            return [text];
+        }
+        List<string> result = [];
+        int startPos = 0;
+        int endPos = maxOutputWidth - currLinePos;
+        while (text.Length - startPos > maxOutputWidth)
+        {
+            while (endPos > startPos)
+            {
+                if (text[endPos] == ' ')
+                {
+                    result.Add(text[startPos..endPos].TrimEnd());
+                    startPos = endPos + 1;
+                    while (startPos < text.Length && text[startPos] == ' ')
+                    {
+                        startPos++; // skip extra spaces
+                    }
+                    endPos = Math.Min(startPos + maxOutputWidth, text.Length - 1);
+                    break;
+                }
+                endPos--;
+            }
+        }
+        if (startPos < text.Length)
+        {
+            result.Add(text[startPos..]);
+        }
+        return result;
+    }
+
     #region Private
 
     /// <summary>

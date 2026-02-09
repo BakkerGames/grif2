@@ -336,67 +336,34 @@ internal class Program
             var index = text.IndexOf(NL_CHAR);
             var before = text[..index];
             text = text[(index + 2)..];
-            var lines = Wordwrap(before);
+            var lines = IO.Wordwrap(before, outputCount, maxOutputWidth);
             foreach (var line in lines)
             {
                 Console.WriteLine(line);
                 OutputTextLog(line + Environment.NewLine);
+                outputCount = 0;
             }
-            outputCount = 0;
         }
         if (!string.IsNullOrEmpty(text))
         {
-            var lines = Wordwrap(text);
+            var lines = IO.Wordwrap(text, outputCount, maxOutputWidth);
+            // WriteLine all but last line
             for (int i = 0; i < lines.Count - 1; i++)
             {
                 var line = lines[i];
                 Console.WriteLine(line);
                 OutputTextLog(line + Environment.NewLine);
-            }
-            if (lines.Count > 0)
-            {
-                var lastLine = lines[^1];
-                Console.Write(lastLine);
-                OutputTextLog(lastLine);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Wordwrap text according to maxOutputWidth.
-    /// </summary>
-    private static List<string> Wordwrap(string text)
-    {
-        if (maxOutputWidth <= 0 || string.IsNullOrEmpty(text) || outputCount + text.Length <= maxOutputWidth)
-        {
-            return [text];
-        }
-        List<string> result = [];
-        StringBuilder currentLine = new();
-        // TODO ### this needs better spaces handling
-        var words = text.Split(' ');
-        foreach (var word in words)
-        {
-            if (outputCount + word.Length + 1 > maxOutputWidth)
-            {
-                // output current line
-                result.Add(currentLine.ToString());
-                currentLine.Clear();
                 outputCount = 0;
             }
-            if (currentLine.Length > 0)
+            // Write last line with no NL
+            if (lines.Count > 0)
             {
-                currentLine.Append(' ');
-                outputCount++;
+                var line = lines[^1];
+                Console.Write(line);
+                OutputTextLog(line);
+                outputCount = line.Length;
             }
-            currentLine.Append(word);
-            outputCount += word.Length;
         }
-        if (currentLine.Length > 0)
-        {
-            result.Add(currentLine.ToString());
-        }
-        return result;
     }
 
     /// <summary>

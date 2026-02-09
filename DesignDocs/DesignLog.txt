@@ -326,3 +326,16 @@
 - Added checking for '\t' in OutputText().
 - Added BlankGame as a starting point in creating a new game file.
 - Added check for filename missing ".grif" extension and add it when loading.
+
+2026-01-27
+- BlankGame fixes
+
+2026-02-05
+- Added GameOver checks in more places to catch all times it can happen.
+
+2026-02-08
+- Added a long TODO list
+
+2026-02-09
+- Moved Wordwrap into IO for general use.
+- Fixed Wordwrap to preserve multiple spaces in lines.
