@@ -1,4 +1,4 @@
-Intro
+Start
 Rooms
 Items
 Actors
@@ -10,3 +10,9 @@ Scripts
 Functions
 Resources
 Map
+Play
+
+
+Font Calibri 18
+Title bar 7FC9FF
+Button frames 4CFF00
