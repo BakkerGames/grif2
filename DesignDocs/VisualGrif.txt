@@ -3,6 +3,7 @@ Rooms
 Items
 Actors
 Vocabulary
+Commands
 Values
 Messages
 Scripts
