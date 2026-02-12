@@ -11,7 +11,7 @@ public partial class Dags
     private static void HandleFor(Grod grod, ScriptObj script, List<GrifMessage> p, List<GrifMessage> result)
     {
         // @for(i,<start>,<end inclusive>)=...$i...@endfor
-        var iterator = "$" + p[0].Value;
+        var iterator = PARAM_CHAR + p[0].Value;
         var startIndex = script.Index;
         var level = 0;
         do
@@ -112,7 +112,7 @@ public partial class Dags
                 }
                 value = value[..^p[2].Value.Length];
             }
-            var loopText = newTokens.ToString().Replace($"${p[0].Value}", value);
+            var loopText = newTokens.ToString().Replace($"{PARAM_CHAR}{p[0].Value}", value);
             var loopScript = CreateScript(loopText);
             loopScript.LocalData = script.LocalData;
             do
@@ -169,7 +169,7 @@ public partial class Dags
                 var value2 = FixListItemOut(value);
                 if (!string.IsNullOrEmpty(value2))
                 {
-                    var loopText = newTokens.ToString().Replace($"${p[0].Value}", value2);
+                    var loopText = newTokens.ToString().Replace($"{PARAM_CHAR}{p[0].Value}", value2);
                     var loopScript = CreateScript(loopText);
                     loopScript.LocalData = script.LocalData;
                     do
