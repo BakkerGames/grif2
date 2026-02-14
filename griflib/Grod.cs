@@ -2,7 +2,10 @@
 
 namespace GrifLib;
 
-public class Grod
+/// <summary>
+/// Initializes a new instance of the Grod class with the specified name, path, and parent.
+/// </summary>
+public class Grod(string? name = null, string? path = null, Grod? parent = null)
 {
     #region private definitions
 
@@ -16,38 +19,19 @@ public class Grod
     #endregion
 
     /// <summary>
-    /// Initializes a new instance of the Grod class.
+    /// Gets or sets the name associated with the object. Used to identify the Grod programmatically.
     /// </summary>
-    public Grod()
-    {
-    }
+    public string? Name { get; set; } = name;
 
     /// <summary>
-    /// Initializes a new instance of the Grod class with the specified name.
+    /// Path of the file from which this Grod was loaded.
     /// </summary>
-    public Grod(string? name)
-    {
-        Name = name;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the Grod class with the specified name and parent.
-    /// </summary>
-    public Grod(string? name, Grod? parent)
-    {
-        Name = name;
-        Parent = parent;
-    }
-
-    /// <summary>
-    /// Gets or sets the name associated with the object.
-    /// </summary>
-    public string? Name { get; set; }
+    public string? Path { get; set; } = path;
 
     /// <summary>
     /// Gets or sets the parent Grod of this instance.
     /// </summary>
-    public Grod? Parent { get; set; }
+    public Grod? Parent { get; set; } = parent;
 
     /// <summary>
     /// Returns the number of keys in the collection, optionally including keys from nested collections.

@@ -171,9 +171,8 @@ public partial class Dags
     /// <summary>
     /// Format the script with line breaks and indents.
     /// Parameter "indent" adds one extra tab at the beginning of each line.
-    /// Parameter "colorize" adds color tags to the script tokens.
     /// </summary>
-    public static string PrettyScript(string? scriptText, bool indent = false, bool colorize = false)
+    public static string PrettyScript(string? scriptText, bool indent = false)
     {
         StringBuilder result = new();
 
@@ -237,14 +236,7 @@ public partial class Dags
                     }
                 }
             }
-            if (colorize)
-            {
-                result.Append(ColorizeToken(s));
-            }
-            else
-            {
-                result.Append(s);
-            }
+            result.Append(s);
             switch (s.ToLower())
             {
                 case IF_TOKEN:
@@ -989,64 +981,6 @@ public partial class Dags
             throw new SystemException("Invalid condition");
         }
         return IsTrue(answer[0].Value);
-    }
-
-    /// <summary>
-    /// Colorize the script tokens.
-    /// </summary>
-    private static string ColorizeToken(string s)
-    {
-        if (s.StartsWith(FOR_TOKEN) ||
-            s.StartsWith(ENDFOR_TOKEN) ||
-            s.Equals(WHILE_TOKEN) ||
-            s.Equals(ENDWHILE_TOKEN))
-        {
-            if (s.EndsWith('('))
-            {
-                return $"<yellow>{s[..^1]}<gray>(";
-            }
-            else
-            {
-                return $"<yellow>{s}";
-            }
-        }
-        else if (s.Equals(IF_TOKEN) ||
-            s.Equals(THEN_TOKEN) ||
-            s.Equals(AND_TOKEN) ||
-            s.Equals(OR_TOKEN) ||
-            s.Equals(NOT_TOKEN) ||
-            s.StartsWith(ELSE_TOKEN) ||
-            s.Equals(ENDIF_TOKEN))
-        {
-            return $"<blue>{s}";
-        }
-        else if (s.StartsWith(SCRIPT_CHAR))
-        {
-            if (s.EndsWith('('))
-            {
-                return $"<cyan>{s[..^1]}<gray>(";
-            }
-            else
-            {
-                return $"<cyan>{s}";
-            }
-        }
-        else if (s == "(" || s == ")" || s == "," || s == "[" || s == "]")
-        {
-            return $"<gray>{s}";
-        }
-        else if (s.StartsWith('"') && s.EndsWith('"'))
-        {
-            return $"<green>{s}";
-        }
-        else if (s.StartsWith(LOCAL_CHAR) || s.StartsWith(PARAM_CHAR))
-        {
-            return $"<magenta>{s}";
-        }
-        else
-        {
-            return $"<white>{s}";
-        }
     }
 
     #endregion
