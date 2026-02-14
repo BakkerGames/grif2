@@ -6,10 +6,9 @@ __config values
 * example game with adjectives, red ball/blue ball/small box/large box
 DAGS example scripts for various useful concepts
 Command-line parameter for pausing at end of game.
-@setchar(value,index,char)
-@getchar(value,index)
-
-ParseInput should check if ParseInit has been run
+* @setchar(value,index,char)
+* @getchar(value,index)
+* ParseInput should check if ParseInit has been run
 * Fix wordwrap to be smarter, as routine in IFGame, don't dupe code in Ide.
 Help
 Float Play
@@ -32,3 +31,5 @@ Message next number
 Firstdesc on items, touched flag
 A, an, the handling on shortdesc
 Config prefix names, longdesc, exit
+* @setgrod(grodname, key, value)
+Make wolf and gnome be actors

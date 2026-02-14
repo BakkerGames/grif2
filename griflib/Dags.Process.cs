@@ -222,7 +222,6 @@ public partial class Dags
                     CheckParameterCount(p, 1);
                     if (IsTrue(grod.Get(DEBUG_FLAG, true)))
                     {
-                        result.Add(new GrifMessage(MessageType.Text, "### "));
                         result.Add(new GrifMessage(MessageType.Text, p[0].Value));
                         result.Add(new GrifMessage(MessageType.Text, NL_CHAR));
                     }
@@ -773,6 +772,14 @@ public partial class Dags
                         value = value[..int1] + p[2].Value[0] + value[(int1 + 1)..];
                     }
                     result.Add(new GrifMessage(MessageType.Internal, value));
+                    break;
+                case SETGROD_TOKEN:
+                    // Set a value in a parent grod by name.
+                    // Good for configuration settings or notes or global variables across all saves.
+                    // Use OUTCHANNEL_ADD_EXTRA_GROD first to create a parent grod with a name.
+                    CheckParameterCount(p, 3);
+                    result.Add(new GrifMessage(MessageType.OutChannel, OUTCHANNEL_SET_EXTRA_GROD_VALUE,
+                        p[0].Value + '\t' + p[1].Value + '\t' + p[2].Value));
                     break;
                 case SETLIST_TOKEN:
                     CheckParameterCount(p, 3);

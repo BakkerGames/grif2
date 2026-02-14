@@ -24,7 +24,7 @@ public class TestGrod
     {
         var parentGrod = new Grod("parent");
         parentGrod.Set("key2", "value2");
-        var childGrod = new Grod("child", parentGrod);
+        var childGrod = new Grod("child", null, parentGrod);
         Assert.That(childGrod.Get("key2", true), Is.EqualTo("value2"));
     }
 
@@ -61,7 +61,7 @@ public class TestGrod
         var parentGrod = new Grod("parent2");
         parentGrod.Set("key7", "value7");
         parentGrod.Set("key8", "value8");
-        var childGrod = new Grod("child2", parentGrod);
+        var childGrod = new Grod("child2", null, parentGrod);
         childGrod.Set("key8", "value8duplicate");
         childGrod.Set("key9", "value9");
         Assert.That(childGrod.Count(true), Is.EqualTo(3));
@@ -119,7 +119,7 @@ public class TestGrod
     {
         var parentGrod = new Grod("parent3");
         parentGrod.Set("key13", "value13");
-        var childGrod = new Grod("child3", parentGrod);
+        var childGrod = new Grod("child3", null, parentGrod);
         childGrod.Set("key14", "value14");
         childGrod.Clear(true);
         using (Assert.EnterMultipleScope())

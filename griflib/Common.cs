@@ -5,7 +5,7 @@ public static partial class Common
     /// <summary>
     /// Gets the current version of the library.
     /// </summary>
-    public static string Version { get { return "2.2026.2.9.0"; } }
+    public static string Version { get { return "2.2026.2.14"; } }
 
     /// <summary>
     /// String comparison: OrdinalIgnoreCase
@@ -24,6 +24,7 @@ public static partial class Common
     public const string SPACE_CHAR = "\\s";
     public const string COMMA_CHAR = "\\u002c";
     public const string LOCAL_CHAR = "__";
+    public const char PARAM_CHAR = '$';
 
     // File and application constants
     public const string APP_NAME = "GRIF";
@@ -62,6 +63,8 @@ public static partial class Common
     public const string OUTCHANNEL_RESTORE_NAME = "#RESTORENAME;";
     public const string OUTCHANNEL_SAVE = "#SAVE;";
     public const string OUTCHANNEL_SAVE_NAME = "#SAVENAME;";
+    public const string OUTCHANNEL_ADD_EXTRA_GROD = "#ADDGROD;";
+    public const string OUTCHANNEL_SET_EXTRA_GROD_VALUE = "#SETGRODVALUE;";
 
     // Prefixes for word types
     public const string ADJECTIVE_PREFIX = "adjective.";

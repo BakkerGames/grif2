@@ -290,6 +290,7 @@ public static class IO
     private static Grod? OpenGrifStack(string filename)
     {
         Grod? baseGrod = null;
+        Grod grod;
         var path = Path.GetDirectoryName(filename) ?? ".";
         foreach (var line in File.ReadLines(filename))
         {
@@ -302,11 +303,28 @@ public static class IO
             {
                 tempLine = Path.Combine(path, tempLine);
             }
+            if (Directory.Exists(tempLine))
+            {
+                foreach (var file in Directory.GetFiles(tempLine, "*" + DATA_EXTENSION))
+                {
+                    grod = OpenGrifFile(file);
+                    if (baseGrod == null)
+                    {
+                        baseGrod = grod;
+                    }
+                    else
+                    {
+                        grod.Parent = baseGrod;
+                        baseGrod = grod;
+                    }
+                }
+                continue;
+            }
             if (!Path.HasExtension(tempLine))
             {
                 tempLine += DATA_EXTENSION;
             }
-            var grod = OpenGrifFile(tempLine);
+            grod = OpenGrifFile(tempLine);
             if (baseGrod == null)
             {
                 baseGrod = grod;
@@ -334,11 +352,9 @@ public static class IO
             throw new FileNotFoundException("The specified file does not exist.", filename);
         }
         var items = ReadGrif(filename);
-        var grod = new Grod
-        {
-            Name = filename
-        };
+        var grod = new Grod(Path.GetFileNameWithoutExtension(filename), filename);
         grod.AddItems(items);
+        grod.Changed = false;
         return grod;
     }
 
