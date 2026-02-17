@@ -773,12 +773,12 @@ public partial class Dags
                     }
                     result.Add(new GrifMessage(MessageType.Internal, value));
                     break;
-                case SETGROD_TOKEN:
+                case SETEXTRA_TOKEN:
                     // Set a value in a parent grod by name.
                     // Good for configuration settings or notes or global variables across all saves.
                     // Use OUTCHANNEL_ADD_EXTRA_GROD first to create a parent grod with a name.
                     CheckParameterCount(p, 3);
-                    result.Add(new GrifMessage(MessageType.OutChannel, OUTCHANNEL_SET_EXTRA_GROD_VALUE,
+                    result.Add(new GrifMessage(MessageType.OutChannel, OUTCHANNEL_SET_EXTRA_VALUE,
                         p[0].Value + '\t' + p[1].Value + '\t' + p[2].Value));
                     break;
                 case SETLIST_TOKEN:

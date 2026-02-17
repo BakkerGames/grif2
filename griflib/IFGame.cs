@@ -373,7 +373,7 @@ public class IFGame
             _ = InputMessages.Dequeue();
             return;
         }
-        if (message.Value.Equals(OUTCHANNEL_ADD_EXTRA_GROD, OIC))
+        if (message.Value.Equals(OUTCHANNEL_ADD_EXTRA, OIC))
         {
             // Add a new grod to the hierarchy for storing extra data, if it doesn't already exist.
             if (message.ExtraValue == null)
@@ -400,12 +400,13 @@ public class IFGame
                 }
             }
         }
-        if (message.Value.Equals(OUTCHANNEL_SET_EXTRA_GROD_VALUE, OIC))
+        if (message.Value.Equals(OUTCHANNEL_SET_EXTRA_VALUE, OIC))
         {
             if (message.ExtraValue == null)
             {
                 throw new Exception("Grod name not specified.");
             }
+            // extraParams = grodname \t key \t value
             var extraParms = message.ExtraValue.Split('\t');
             var grodName = extraParms[0];
             var tempGrod = _overlayGrod.GetGrod(grodName);
