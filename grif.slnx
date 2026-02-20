@@ -12,8 +12,6 @@
     <File Path="DesignDocs/GameFlow.txt" />
     <File Path="DesignDocs/Grod.md" />
     <File Path="DesignDocs/TODO.txt" />
-    <File Path="DesignDocs/VisualGrif.png" />
-    <File Path="DesignDocs/VisualGrif.txt" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="LICENSE.txt" />
