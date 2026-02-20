@@ -38,6 +38,7 @@ internal class ParserItem(string key, string[] values)
 /// </summary>
 public static class IFParser
 {
+    private static bool _initialized = false;
     private static long _maxWordLen = 0;
     private static string DONT_UNDERSTAND_TEXT = "";
     private static List<ParserItem> _verbs = [];
@@ -51,8 +52,13 @@ public static class IFParser
     /// <summary>
     /// Initializes parser data structures using values from the specified Grod instance.
     /// </summary>
-    public static void ParseInit(Grod grod)
+    private static void ParseInit(Grod grod)
     {
+        if (_initialized)
+        {
+            return;
+        }
+        _initialized = true;
         _verbs = [.. grod.Items(VERB_PREFIX, true, true)
             .Where(x => !string.IsNullOrWhiteSpace(x.Value) && x.Value != NULL)
             .Select(x => new ParserItem(x.Key[VERB_PREFIX.Length..], SplitList(x.Value)))];
@@ -111,6 +117,7 @@ public static class IFParser
         {
             return null;
         }
+        ParseInit(grod);
         var words = input.Replace(",", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries)
             .ToList();
         if (words.Count == 0)

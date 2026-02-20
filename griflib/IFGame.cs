@@ -18,8 +18,8 @@ public delegate void OutputEventHandler(object sender, GrifMessage e);
 
 public class IFGame
 {
-    private Grod _baseGrod = new("");
-    private Grod _overlayGrod = new("");
+    private Grod _baseGrod = new();
+    private Grod _overlayGrod = new();
     private string _saveBasePath = "";
     private string? _referenceBasePath;
 
@@ -96,7 +96,7 @@ public class IFGame
         try
         {
             _baseGrod = grod;
-            _overlayGrod = new(Path.Combine(_saveBasePath, SAVE_FILENAME + SAVE_EXTENSION))
+            _overlayGrod = new(SAVE_FILENAME, Path.Combine(_saveBasePath, SAVE_FILENAME + SAVE_EXTENSION))
             {
                 Parent = _baseGrod
             };
@@ -104,14 +104,6 @@ public class IFGame
         catch (Exception)
         {
             throw new IOException("Failed to initialize game data.");
-        }
-        try
-        {
-            ParseInit(_overlayGrod);
-        }
-        catch (Exception)
-        {
-            throw new SystemException("Failed to initialize parser.");
         }
     }
 
@@ -303,6 +295,7 @@ public class IFGame
             var savefile = Path.Combine(_saveBasePath, SAVE_FILENAME + SAVE_EXTENSION);
             var itemList = _overlayGrod.Items(false, true);
             WriteGrif(savefile, itemList, true);
+            _overlayGrod.Changed = false;
             return;
         }
         if (message.Value.Equals(OUTCHANNEL_SAVE_NAME, OIC))
@@ -314,6 +307,7 @@ public class IFGame
             var savefile = Path.Combine(_saveBasePath, message.ExtraValue + SAVE_EXTENSION);
             var itemList = _overlayGrod.Items(false, true);
             WriteGrif(savefile, itemList, true);
+            _overlayGrod.Changed = false;
             return;
         }
         if (message.Value.Equals(OUTCHANNEL_RESTORE, OIC))
@@ -326,6 +320,7 @@ public class IFGame
             var itemList = ReadGrif(savefile);
             _overlayGrod.Clear(false); // clear only the user data
             _overlayGrod.AddItems(itemList);
+            _overlayGrod.Changed = false;
             return;
         }
         if (message.Value.Equals(OUTCHANNEL_RESTORE_NAME, OIC))
@@ -342,11 +337,13 @@ public class IFGame
             var itemList = ReadGrif(savefile);
             _overlayGrod.Clear(false); // clear only the user data
             _overlayGrod.AddItems(itemList);
+            _overlayGrod.Changed = false;
             return;
         }
         if (message.Value.Equals(OUTCHANNEL_RESTART, OIC))
         {
             _overlayGrod.Clear(false); // clear only the user data
+            _overlayGrod.Changed = false;
             return;
         }
         if (message.Value.Equals(OUTCHANNEL_ASK, OIC))
@@ -375,6 +372,67 @@ public class IFGame
             }
             _ = InputMessages.Dequeue();
             return;
+        }
+        if (message.Value.Equals(OUTCHANNEL_ADD_EXTRA, OIC))
+        {
+            // Add a new grod to the hierarchy for storing extra data, if it doesn't already exist.
+            if (message.ExtraValue == null)
+            {
+                throw new Exception("Grod name not specified.");
+            }
+            var grodName = message.ExtraValue;
+            var tempGrod = _overlayGrod.GetGrod(grodName);
+            if (tempGrod == null)
+            {
+                // Insert a new grod into the hierarchy to save the data
+                tempGrod = new Grod()
+                {
+                    Name = grodName,
+                    FilePath = Path.Combine(_saveBasePath, grodName + DATA_EXTENSION),
+                    Parent = _overlayGrod.Parent
+                };
+                _overlayGrod.Parent = tempGrod;
+                if (File.Exists(tempGrod.FilePath))
+                {
+                    var itemList = ReadGrif(tempGrod.FilePath);
+                    tempGrod.AddItems(itemList);
+                    tempGrod.Changed = false;
+                }
+            }
+        }
+        if (message.Value.Equals(OUTCHANNEL_SET_EXTRA_VALUE, OIC))
+        {
+            if (message.ExtraValue == null)
+            {
+                throw new Exception("Grod name not specified.");
+            }
+            // extraParams = grodname \t key \t value
+            var extraParms = message.ExtraValue.Split('\t');
+            var grodName = extraParms[0];
+            var tempGrod = _overlayGrod.GetGrod(grodName);
+            if (tempGrod != null)
+            {
+                // Refresh the data in an extra grod from its file, if it exists.
+                // This allows the game to keep the data in sync with external changes.
+                if (tempGrod.FilePath == null)
+                {
+                    throw new Exception("Grod file path not specified.");
+                }
+                if (File.Exists(tempGrod.FilePath))
+                {
+                    var existingList = ReadGrif(tempGrod.FilePath);
+                    tempGrod.Clear(false);
+                    tempGrod.AddItems(existingList);
+                    tempGrod.Changed = false;
+                }
+                // set value
+                tempGrod.Set(extraParms[1], extraParms[2]); // key and value
+                // save file immediately
+                var savefile = tempGrod.FilePath;
+                var itemList = tempGrod.Items(false, true);
+                WriteGrif(savefile, itemList, true);
+                tempGrod.Changed = false;
+            }
         }
         if (IsScript(message.Value))
         {

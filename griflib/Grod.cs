@@ -5,13 +5,13 @@ namespace GrifLib;
 /// <summary>
 /// Initializes a new instance of the Grod class with the specified name, path, and parent.
 /// </summary>
-public class Grod(string? name = null, string? path = null, Grod? parent = null)
+public class Grod(string? name = null, string? filePath = null, Grod? parent = null)
 {
     #region private definitions
 
     // Lists of string representations for Boolean true and false values
-    private readonly string[] _truthyList = ["y", "yes", "t", "1", "-1", TRUE];
-    private readonly string[] _falseyList = ["n", "no", "f", "0", "", FALSE];
+    private readonly string[] _truthyList = [TRUE, "t", "yes", "y", "1", "-1"];
+    private readonly string[] _falseyList = [FALSE, "f", "no", "n", "0", ""];
 
     // Internal storage for key-value pairs, using case-insensitive keys
     private readonly Dictionary<string, string?> _data = new(StringComparer.OrdinalIgnoreCase);
@@ -26,12 +26,17 @@ public class Grod(string? name = null, string? path = null, Grod? parent = null)
     /// <summary>
     /// Path of the file from which this Grod was loaded.
     /// </summary>
-    public string? Path { get; set; } = path;
+    public string? FilePath { get; set; } = filePath;
 
     /// <summary>
     /// Gets or sets the parent Grod of this instance.
     /// </summary>
     public Grod? Parent { get; set; } = parent;
+
+    /// <summary>
+    /// Track if changes made to any item in this Grod.
+    /// </summary>
+    public bool Changed { get; set; } = false;
 
     /// <summary>
     /// Returns the number of keys in the collection, optionally including keys from nested collections.
@@ -119,6 +124,7 @@ public class Grod(string? name = null, string? path = null, Grod? parent = null)
         {
             _data[key] = value;
         }
+        Changed = true;
     }
 
     /// <summary>
@@ -154,6 +160,7 @@ public class Grod(string? name = null, string? path = null, Grod? parent = null)
     {
         ValidateKey(ref key);
         _data.Remove(key);
+        Changed = true;
         if (recursive && Parent != null)
         {
             Parent.Remove(key, recursive);
@@ -166,6 +173,7 @@ public class Grod(string? name = null, string? path = null, Grod? parent = null)
     public void Clear(bool recursive)
     {
         _data.Clear();
+        Changed = false;
         if (recursive && Parent != null)
         {
             Parent.Clear(recursive);
@@ -288,6 +296,23 @@ public class Grod(string? name = null, string? path = null, Grod? parent = null)
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Gets the parent Grod with the specified name, searching recursively up the parent chain. Returns null if no matching parent is found.
+    /// </summary>
+    public Grod? GetGrod(string name)
+    {
+        var parent = Parent;
+        while (parent != null)
+        {
+            if (parent.Name != null && parent.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                return parent;
+            }
+            parent = parent.Parent;
+        }
+        return null;
     }
 
     #region private methods

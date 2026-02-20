@@ -339,3 +339,15 @@
 2026-02-09
 - Moved Wordwrap into IO for general use.
 - Fixed Wordwrap to preserve multiple spaces in lines.
+
+2026-02-14
+- Added PARAM_CHAR for handling $x parameters in scripts.
+- Added FilePath parameter to Grod.
+- Added Grod.Changed flag to track changes for saving.
+- ParseInit is now private and automatically called.
+- Added Grod.GetGrod(name) to get an ancestor Grod by name.
+- Added OUTCHANNEL_ADD_EXTRA_GROD, OUTCHANNEL_SET_EXTRA_GROD_VALUE.
+- Added @setgrod() for setting values in an extra grod.
+- Extra grods are saved in separate files in the save directory and shared with all saves.
+- Fixed GrifStack to allow directories.
+- Cleaned up Debug output (removed ###, messages could add that).

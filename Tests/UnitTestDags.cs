@@ -213,12 +213,12 @@ public class UnitTestDags
     public void Test_Debug()
     {
         grod.Set(DEBUG_FLAG, TRUE);
-        result = Process(grod, $"{DEBUG_TOKEN}\"this is a comment\")");
+        result = Process(grod, $"{DEBUG_TOKEN}\"### this is a comment\")");
         Assert.That(Squash(result), Is.EqualTo("### this is a comment" + NL_CHAR));
         result = Process(grod, $"{DEBUG_TOKEN}{ADD_TOKEN}123,456))");
-        Assert.That(Squash(result), Is.EqualTo("### 579" + NL_CHAR));
+        Assert.That(Squash(result), Is.EqualTo("579" + NL_CHAR));
         grod.Set(DEBUG_FLAG, FALSE);
-        result = Process(grod, $"{DEBUG_TOKEN}\"this is a comment\")");
+        result = Process(grod, $"{DEBUG_TOKEN}\"### this is a comment\")");
         Assert.That(Squash(result), Is.EqualTo(""));
     }
 
