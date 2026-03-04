@@ -519,6 +519,74 @@ public partial class Dags
         return items;
     }
 
+    /// <summary>
+    /// Determines if the key is valid. Function keys start with @ and can have parameters.
+    /// Non-function keys can have periods.
+    /// </summary>
+    public static bool ValidKey(string key, bool functionKey)
+    {
+        if (string.IsNullOrEmpty(key)) return false;
+        bool inParen = false;
+        bool lastComma = false;
+        for (int index = 0; index < key.Length; index++)
+        {
+            char c = key[index];
+            if (index == 0 && functionKey && c != '@')
+            {
+                return false;
+            }
+            if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))
+            {
+                lastComma = false;
+                continue;
+            }
+            if (!functionKey)
+            {
+                if (c == '.')
+                {
+                    lastComma = false;
+                    continue;
+                }
+                return false;
+            }
+            else
+            {
+                if (c == '@')
+                {
+                    if (index > 0) return false;
+                    lastComma = false;
+                    continue;
+                }
+                if (c == '(')
+                {
+                    if (inParen) return false;
+                    inParen = true;
+                    lastComma = true; // so no initial comma
+                    continue;
+                }
+                if (inParen)
+                {
+                    if (c == ',')
+                    {
+                        if (lastComma) return false;
+                        lastComma = true;
+                        continue;
+                    }
+                    if (c == ')')
+                    {
+                        if (lastComma) return false; // so no trailing comma, no empty parens
+                        if (index < key.Length - 1) return false;
+                        inParen = false;
+                        continue;
+                    }
+                }
+                return false;
+            }
+        }
+        if (inParen) return false;
+        return true;
+    }
+
     #region Private routines
 
     /// <summary>
