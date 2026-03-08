@@ -321,7 +321,7 @@ public class Grod(string? name = null, string? filePath = null, Grod? parent = n
     /// Compares two dot-delimited key strings using a custom ordering that accounts for special wildcard tokens and
     /// numeric values.
     /// </summary>
-    private static int CompareKeys(string x, string y)
+    public static int CompareKeys(string x, string y)
     {
         if (x == null)
         {

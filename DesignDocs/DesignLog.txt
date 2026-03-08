@@ -351,3 +351,9 @@
 - Extra grods are saved in separate files in the save directory and shared with all saves.
 - Fixed GrifStack to allow directories.
 - Cleaned up Debug output (removed ###, messages could add that).
+
+2026-03-04
+- ValidKey
+
+2026-03-07
+- Make CompareKeys public for outside access
