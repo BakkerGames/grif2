@@ -62,13 +62,13 @@ public partial class Dags
                 }
                 else
                 {
-                    if (result.Length > 0)
+                    if (listResult.Count > 0)
                     {
-                        result.AppendLine();
+                        result.Append('\n');
                     }
                     if (indentLevel > 0)
                     {
-                        result.Append(new string('\t', indentLevel));
+                        result.Append(new string(' ', indentLevel * 4));
                     }
                 }
             }
