@@ -10,6 +10,10 @@ public partial class Dags
     /// </summary>
     public static List<TextColorItem> ColorizeScript(string script)
     {
+        if (!script.TrimStart().StartsWith(SCRIPT_CHAR))
+        {
+            return [new TextColorItem(script, TextColorEnum.Default)];
+        }
         ScriptObj scriptObj = CreateScript(script);
         return ColorizeScript(scriptObj);
     }
@@ -142,20 +146,26 @@ public partial class Dags
         }
         if (s.StartsWith(COMMENT_TOKEN, OIC) || s.StartsWith("//"))
         {
-            result.Add(new TextColorItem(s, TextColorEnum.CommentColor));
+            result.Add(new TextColorItem(s[..^1], TextColorEnum.CommentColor));
+            result.Add(new TextColorItem("(", TextColorEnum.PunctuationColor));
         }
         else if (s.Equals(IF_TOKEN, OIC) ||
             s.Equals(THEN_TOKEN, OIC) ||
             s.Equals(AND_TOKEN, OIC) ||
             s.Equals(OR_TOKEN, OIC) ||
             s.Equals(NOT_TOKEN, OIC) ||
-            s.StartsWith(ELSE_TOKEN, OIC) ||
+            s.Equals(ELSE_TOKEN, OIC) ||
+            s.Equals(ELSEIF_TOKEN, OIC) ||
             s.Equals(ENDIF_TOKEN, OIC))
         {
             result.Add(new TextColorItem(s, TextColorEnum.IfColor));
         }
-        else if (s.StartsWith(FOR_TOKEN, OIC) ||
-            s.StartsWith(ENDFOR_TOKEN, OIC) ||
+        else if (s.Equals(FOR_TOKEN, OIC) ||
+            s.Equals(FOREACHKEY_TOKEN, OIC) ||
+            s.Equals(FOREACHLIST_TOKEN, OIC) ||
+            s.Equals(ENDFOR_TOKEN, OIC) ||
+            s.Equals(ENDFOREACHKEY_TOKEN, OIC) ||
+            s.Equals(ENDFOREACHLIST_TOKEN, OIC) ||
             s.Equals(WHILE_TOKEN, OIC) ||
             s.Equals(ENDWHILE_TOKEN, OIC))
         {
@@ -192,6 +202,31 @@ public partial class Dags
         else if (s.StartsWith(LOCAL_CHAR) || s.StartsWith(PARAM_CHAR))
         {
             result.Add(new TextColorItem(s, TextColorEnum.ParameterColor));
+        }
+        else if (s.Contains(PARAM_CHAR))
+        {
+            while (s.Contains(PARAM_CHAR))
+            {
+                int pos1 = s.IndexOf(PARAM_CHAR);
+                if (pos1 > 0)
+                {
+                    result.Add(new TextColorItem(s[..pos1], TextColorEnum.Default));
+                    s = s[pos1..];
+                }
+                pos1 = s.Length;
+                for (int i = 1; i < s.Length; i++)
+                {
+                    if (char.IsLetterOrDigit(s[i])) continue;
+                    pos1 = i;
+                    break;
+                }
+                result.Add(new TextColorItem(s[..pos1], TextColorEnum.ParameterColor));
+                s = s[pos1..];
+            }
+            if (s.Length > 0)
+            {
+                result.Add(new TextColorItem(s, TextColorEnum.Default));
+            }
         }
         else
         {
