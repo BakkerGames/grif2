@@ -100,19 +100,34 @@ public class UnitTestGrod
     }
 
     [Test]
-    public void Test_TrimmedKeysSet()
+    public void Test_WhitespaceKeysSet()
     {
-        Grod g = new("base");
-        g.Set("    k   ", "v");
-        Assert.That(g.Get("k", false), Is.EqualTo("v"));
+        try
+        {
+            Grod g = new("base");
+            g.Set("    k   ", "v");
+            Assert.Fail();
+        }
+        catch (Exception)
+        {
+            Assert.Pass();
+        }
     }
 
     [Test]
-    public void Test_TrimmedKeysGet()
+    public void Test_WhitespaceKeyGet()
     {
-        Grod g = new("base");
-        g.Set("k", "v");
-        Assert.That(g.Get("   k   ", false), Is.EqualTo("v"));
+        try
+        {
+            Grod g = new("base");
+            g.Set("k", "v");
+            var value = g.Get("   k   ", false);
+            Assert.Fail();
+        }
+        catch (Exception)
+        {
+            Assert.Pass();
+        }
     }
 
     [Test]
