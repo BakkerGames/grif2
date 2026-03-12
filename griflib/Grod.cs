@@ -52,7 +52,7 @@ public class Grod(string? name = null, string? filePath = null, Grod? parent = n
     /// </summary>
     public string? Get(string key, bool recursive)
     {
-        ValidateKey(ref key);
+        ValidateKey(key);
         if (_data.TryGetValue(key, out var value))
         {
             if (value == null || value.Equals(NULL, StringComparison.OrdinalIgnoreCase))
@@ -115,7 +115,7 @@ public class Grod(string? name = null, string? filePath = null, Grod? parent = n
     /// </summary>
     public void Set(string key, string? value)
     {
-        ValidateKey(ref key);
+        ValidateKey(key);
         if (value != null && value.Equals(NULL, StringComparison.OrdinalIgnoreCase))
         {
             value = null;
@@ -158,7 +158,7 @@ public class Grod(string? name = null, string? filePath = null, Grod? parent = n
     /// </summary>
     public void Remove(string key, bool recursive)
     {
-        ValidateKey(ref key);
+        ValidateKey(key);
         _data.Remove(key);
         Changed = true;
         if (recursive && Parent != null)
@@ -186,7 +186,7 @@ public class Grod(string? name = null, string? filePath = null, Grod? parent = n
     /// </summary>
     public bool ContainsKey(string key, bool recursive)
     {
-        ValidateKey(ref key);
+        ValidateKey(key);
         if (_data.ContainsKey(key))
         {
             return true;
@@ -289,7 +289,7 @@ public class Grod(string? name = null, string? filePath = null, Grod? parent = n
     {
         try
         {
-            ValidateKey(ref key);
+            ValidateKey(key);
             return true;
         }
         catch
@@ -357,16 +357,16 @@ public class Grod(string? name = null, string? filePath = null, Grod? parent = n
     }
 
     /// <summary>
-    /// Validates that the specified key is does not contain invalid characters or whitespace.
+    /// Validates that the specified key does not contain invalid characters or whitespace.
+    /// Only special characters used by the DAGS language are excluded. All others are valid.
     /// </summary>
-    private static void ValidateKey(ref string key)
+    private static void ValidateKey(string key)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
-            throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+            throw new ArgumentException("Key cannot be null, empty, or only whitespace.", nameof(key));
         }
-        key = key.Trim();
-        var isScriptKey = key[0] == '@';
+        var isScriptKey = key[0] == SCRIPT_CHAR;
         for (int i = 0; i < key.Length; i++)
         {
             var c = key[i];
@@ -378,17 +378,17 @@ public class Grod(string? name = null, string? filePath = null, Grod? parent = n
             {
                 throw new ArgumentException("Key cannot contain whitespace characters.", nameof(key));
             }
-            if (c == '$' || c == '"')
+            if (c == PARAM_CHAR || c == '"' || c == '\\')
             {
-                throw new ArgumentException($"Key cannot contain punctuation characters: {c}", nameof(key));
+                throw new ArgumentException($"Key cannot contain special characters: {c}", nameof(key));
             }
             if (!isScriptKey && (c == '(' || c == ')' || c == ','))
             {
                 throw new ArgumentException($"Key cannot contain punctuation characters: {c}", nameof(key));
             }
-            if (i != 0 && c == '@')
+            if (i != 0 && c == SCRIPT_CHAR)
             {
-                throw new ArgumentException("Key cannot contain the '@' character except at the start.", nameof(key));
+                throw new ArgumentException($"Key cannot contain '{SCRIPT_CHAR}' except at the start.", nameof(key));
             }
         }
     }
