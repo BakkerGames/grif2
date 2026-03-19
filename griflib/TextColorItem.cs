@@ -7,12 +7,13 @@ public enum TextColorEnum
 {
     Default = 0,
     PunctuationColor = 1,
-    TokenColor = 2,
-    IfColor = 3,
-    ForColor = 4,
-    QuoteColor = 5,
-    ParameterColor = 6,
-    CommentColor = 7,
+    ParenthesisColor = 2,
+    TokenColor = 3,
+    IfColor = 4,
+    ForColor = 5,
+    QuoteColor = 6,
+    ParameterColor = 7,
+    CommentColor = 8,
 }
 
 /// <summary>

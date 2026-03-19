@@ -147,7 +147,7 @@ public partial class Dags
         if (s.StartsWith(COMMENT_TOKEN, OIC) || s.StartsWith("//"))
         {
             result.Add(new TextColorItem(s[..^1], TextColorEnum.CommentColor));
-            result.Add(new TextColorItem("(", TextColorEnum.PunctuationColor));
+            result.Add(new TextColorItem("(", TextColorEnum.ParenthesisColor));
         }
         else if (s.Equals(IF_TOKEN, OIC) ||
             s.Equals(THEN_TOKEN, OIC) ||
@@ -172,7 +172,7 @@ public partial class Dags
             if (s.EndsWith('('))
             {
                 result.Add(new TextColorItem(s[..^1], TextColorEnum.ForColor));
-                result.Add(new TextColorItem("(", TextColorEnum.PunctuationColor));
+                result.Add(new TextColorItem("(", TextColorEnum.ParenthesisColor));
             }
             else
             {
@@ -184,16 +184,20 @@ public partial class Dags
             if (s.EndsWith('('))
             {
                 result.Add(new TextColorItem(s[..^1], TextColorEnum.TokenColor));
-                result.Add(new TextColorItem("(", TextColorEnum.PunctuationColor));
+                result.Add(new TextColorItem("(", TextColorEnum.ParenthesisColor));
             }
             else
             {
                 result.Add(new TextColorItem(s, TextColorEnum.TokenColor));
             }
         }
-        else if (s == "(" || s == ")" || s == "," || s == "[" || s == "]")
+        else if (s == "," || s == "[" || s == "]")
         {
             result.Add(new TextColorItem(s, TextColorEnum.PunctuationColor));
+        }
+        else if (s == "(" || s == ")")
+        {
+            result.Add(new TextColorItem(s, TextColorEnum.ParenthesisColor));
         }
         else if (s.StartsWith('"') && s.EndsWith('"'))
         {
