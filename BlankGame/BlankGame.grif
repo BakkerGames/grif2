@@ -203,7 +203,7 @@ direction.west
 	west,w
 item.ball
 item.ball.location
-	2
+	second
 item.ball.longdesc
 	There is a red ball here.
 item.ball.shortdesc
@@ -211,7 +211,7 @@ item.ball.shortdesc
 item.box.container
 	true
 item.box.location
-	1
+	first
 item.box.longdesc
 	There is a blue box here.
 item.box.shortdesc
@@ -265,21 +265,28 @@ noun.ball
 noun.box
 	box
 player.location
-	1
+	first
 preposition.in
 	in,into,within,inside
-room.1.exit.north
-	2
-room.1.longdesc
-	You are in the starting room, #1.
-room.1.shortdesc
-	Room #1
-room.2.exit.south
-	1
-room.2.longdesc
-	This is the second room, #2.
-room.2.shortdesc
-	Room #2
+room.first.exit.north
+	second
+room.first.longdesc
+	You are in the first room.
+room.first.shortdesc
+	First Room
+room.second.exit.south
+	first
+room.second.longdesc
+	This is the second room.
+room.second.shortdesc
+	Second Room
+script.intro
+	@if @false(@get(value.intro)) @then
+		@set(value.intro,true)
+		@msg(message.intro)
+		@nl
+		@look
+	@endif
 system.articles
 	a,an,the
 system.gamename
@@ -287,18 +294,17 @@ system.gamename
 system.gametitle
 	Blank Game
 system.intro
-	@if @false(@get(value.intro)) @then
-		@set(value.intro,true)
-		@msg(message.intro)
-		@nl
-		@look
-	@endif
+	@script(script.intro)
 system.output_width
 	80
+system.player.location
+	player.location
 system.prompt
 	\n>\s
 system.tab_length
 	4
+system.version
+	2026.03.25
 value.intro
 	false
 verb.drop
