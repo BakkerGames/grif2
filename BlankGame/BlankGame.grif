@@ -145,7 +145,7 @@ command.take.*
 		@msg(message.already_carrying)
 	@elseif @eq(@get(@concat("item.",@get(input.noun),".location")),@room) @then
 		@set(@concat("item.",@get(input.noun),".location"),@inv)
-		@write(@get(message.take_one))
+		@write(@get(message.take_one)," ")
 		@write(@get(@concat("item.",@get(input.noun),".shortdesc")))
 		@writeline(".")
 	@else
@@ -201,7 +201,6 @@ direction.south
 	south,s
 direction.west
 	west,w
-item.ball
 item.ball.location
 	second
 item.ball.longdesc
@@ -253,7 +252,7 @@ message.restore_complete
 message.save_complete
 	Save complete.
 message.take_one
-	You take\s
+	You take
 message.taking
 	You pick up:
 message.you_see_here
